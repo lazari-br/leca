@@ -1,22 +1,36 @@
 <!-- resources/views/home.blade.php -->
+ 
 @extends('layouts.app')
 
 @section('title', 'Leca Pijamas e Moda Fitness - Home')
 
 @section('content')
+<!-- Swiper CSS -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+/>
+
     <!-- Hero Banner -->
-    <div class="bg-gradient-to-r from-pink-400 to-pink-600 text-white rounded-lg mb-8">
-        <div class="container mx-auto px-4 py-16">
-            <div class="max-w-xl">
-                <h1 class="text-4xl font-bold mb-4">Leca Pijamas e Moda Fitness</h1>
-                <p class="text-xl mb-8">Conforto e estilo para todos os momentos da sua vida.</p>
-                <div class="flex space-x-4">
-                    <a href="{{ route('product.category', 'fitness') }}" class="bg-white text-pink-500 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors">Moda Fitness</a>
-                    <a href="{{ route('product.category', 'pijamas') }}" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-bold hover:bg-white hover:text-pink-500 transition-colors">Pijamas</a>
+    <div class="container mx-auto px-4 py-6">
+    <div class="swiper mySwiper">
+        <div class="swiper-wrapper">
+        @foreach($categories as $category)
+            @foreach($category->products->take(8) as $product)
+            <div class="swiper-slide">
+                <div class="p-4 bg-white rounded shadow text-center">
+                    <img src="{{ $product->slug }}" alt="{{ $product->name }}" class="w-full h-40 object-cover mb-2 rounded">
+                    <h2 class="text-lg font-semibold">{{ $product->name }}</h2>
                 </div>
-            </div>
+                </div>
+            @endforeach
+        @endforeach
         </div>
-    </div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-pagination"></div>
+  </div>
+</div>
 
  <!-- Categories Section -->
  @foreach($categories as $category)
@@ -68,4 +82,31 @@
             </section>
         @endif
     @endforeach
+
+    <!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<!-- Inicialização do Swiper -->
+<script>
+  const swiper = new Swiper(".mySwiper", {
+    slidesPerView: "auto",
+    spaceBetween: 20,
+    breakpoints: {
+      320: { slidesPerView: 1 },
+      640: { slidesPerView: 2 },
+      768: { slidesPerView: 3 },
+      1024: { slidesPerView: 4 },
+      1280: { slidesPerView: 5 },
+    },
+    loop: true,
+    pagination: {
+      el: ".swiper-pagination",
+      clickable: true,
+    },
+    navigation: {
+      nextEl: ".swiper-button-next",
+      prevEl: ".swiper-button-prev",
+    },
+  });
+</script>
 @endsection

@@ -71,9 +71,6 @@ class ProductSeeder extends Seeder
             $variations = $product['variations'];
             unset($product['variations']);
             
-            // Adicionar imagem placeholder
-            $product['image'] = 'products/' . $product['slug'] . '.jpg';
-            
             // Criar produto
             $newProduct = Product::create($product);
             

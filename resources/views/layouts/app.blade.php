@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Leca Pijamas e Moda Fitness')</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/logo.png') }}">
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->
@@ -46,6 +47,10 @@
                     <a href="{{ route('home') }}" class="text-gray-700 hover:text-pink-500">Home</a>
                     <a href="{{ route('product.category', 'fitness') }}" class="text-gray-700 hover:text-pink-500">Fitness</a>
                     <a href="{{ route('product.category', 'pijamas') }}" class="text-gray-700 hover:text-pink-500">Pijamas</a>
+                    <!-- Link de gerenciamento de produtos (visível apenas para usuários autenticados) -->
+                    @auth
+                        <a href="{{ route('admin.products.index') }}" class="text-gray-700 hover:text-pink-500">Gerenciar Produtos</a>
+                    @endauth
                     <a href="#" class="text-gray-700 hover:text-pink-500">Contato</a>
                 </nav>
 

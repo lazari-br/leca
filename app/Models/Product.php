@@ -16,7 +16,6 @@ class Product extends Model
         'price',
         'category_id',
         'subcategory',
-        'image',
         'active'
     ];
 
@@ -28,6 +27,40 @@ class Product extends Model
     public function variations()
     {
         return $this->hasMany(ProductVariation::class);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('order');
+    }
+
+    public function mainImage()
+    {
+        return $this->hasOne(ProductImage::class)->where('is_main', true);
+    }
+
+    // Método para obter a URL da imagem principal ou primeira disponível
+    public function getMainImageUrlAttribute()
+    {
+        // Verifica se existe uma imagem principal
+        $mainImage = $this->mainImage;
+        if ($mainImage) {
+            return asset($mainImage->image_path);
+        }
+        
+        // Verifica se existe alguma imagem
+        $firstImage = $this->images()->first();
+        if ($firstImage) {
+            return asset($firstImage->image_path);
+        }
+        
+        // Caso não haja imagens, verifica o campo 'image' legado
+        if ($this->image) {
+            return asset($this->image);
+        }
+        
+        // Sem imagem
+        return null;
     }
 
     public function getAvailableSizesAttribute()

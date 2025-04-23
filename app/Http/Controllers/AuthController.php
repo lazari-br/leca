@@ -9,8 +9,15 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    // Removido o construtor com middleware que estava causando o erro
+    
     public function showLoginForm()
     {
+        // Se o usuário já estiver logado, redireciona para a home
+        if (Auth::check()) {
+            return redirect('/');
+        }
+        
         return view('auth.login');
     }
 
@@ -24,6 +31,9 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
+            // Regenera a sessão após login bem-sucedido (segurança)
+            $request->session()->regenerate();
+            
             return redirect()->intended('/');
         }
 
@@ -32,9 +42,16 @@ class AuthController extends Controller
         ]);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::logout();
+        
+        // Invalida a sessão do usuário
+        $request->session()->invalidate();
+        
+        // Regenera o token da sessão
+        $request->session()->regenerateToken();
+        
         return redirect('/');
     }
 }

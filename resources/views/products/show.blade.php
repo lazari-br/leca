@@ -17,17 +17,39 @@
     </nav>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- Product Image -->
-        <div>
-            @if($product->image)
-                <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" class="w-full h-auto rounded-lg shadow-md">
-            @else
-                <div class="w-full h-96 bg-gray-200 flex items-center justify-center rounded-lg">
-                    <span class="text-gray-500">Sem imagem</span>
-                </div>
+        <!-- Product Images -->
+        <div x-data="{ activeImage: 0, images: [] }" x-init="images = [
+            @foreach($product->images as $index => $image)
+                '{{ asset($image->image_path) }}',
+            @endforeach
+            @if($product->images->count() == 0 && $product->image)
+                '{{ asset($product->image) }}',
             @endif
+        ]">
+            <div class="mb-4">
+                <div class="aspect-w-1 aspect-h-1 overflow-hidden rounded-lg bg-gray-200">
+                    <template x-if="images.length > 0">
+                        <img :src="images[activeImage]" alt="{{ $product->name }}" class="object-cover w-full h-full">
+                    </template>
+                    <template x-if="images.length === 0">
+                        <div class="w-full h-full flex items-center justify-center">
+                            <span class="text-gray-500">Sem imagem</span>
+                        </div>
+                    </template>
+                </div>
+            </div>
             
-            <!-- Additional Images would go here -->
+            <!-- Thumbnails -->
+            <div class="flex space-x-2 overflow-x-auto pb-2" x-show="images.length > 1">
+                <template x-for="(src, index) in images" :key="index">
+                    <button 
+                        @click="activeImage = index" 
+                        :class="{ 'ring-2 ring-pink-500': activeImage === index }"
+                        class="w-20 h-20 rounded-md overflow-hidden border flex-shrink-0">
+                        <img :src="src" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                    </button>
+                </template>
+            </div>
         </div>
 
         <!-- Product Details -->
