@@ -85,7 +85,7 @@ Edite o arquivo `resources/views/products/show.blade.php` e altere o número no 
 <a href="https://wa.me/5500000000000?text=Olá! Tenho interesse no produto {{ $product->name }}%20(Código: {{ $product->code }})"
 ```
 
-### Adicionando Imagens de Produtos
+## Adicionando Imagens de Produtos
 
 1. Coloque as imagens na pasta `storage/app/public/products/`
 2. O nome do arquivo deve corresponder ao slug do produto com extensão `.jpg` (ex: `conjunto-short-com-bolso-e-regata-nadador.jpg`)

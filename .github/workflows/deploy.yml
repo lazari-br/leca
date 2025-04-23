@@ -1,0 +1,43 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main  # ou "master", dependendo da sua branch principal
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy to Cloud Run
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Configurar autenticação com GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Configurar projeto do GCP
+        run: gcloud config set project leca-store-ai
+
+      - name: Build da imagem Docker
+        run: |
+          docker build -t us-central1-docker.pkg.dev/leca-store-ai/leca/leca-image .
+
+      - name: Login no Artifact Registry
+        run: |
+          gcloud auth configure-docker us-central1-docker.pkg.dev
+
+      - name: Push da imagem
+        run: |
+          docker push us-central1-docker.pkg.dev/leca-store-ai/leca/leca-image
+
+      - name: Deploy no Cloud Run
+        run: |
+          gcloud run deploy leca-service \
+            --image us-central1-docker.pkg.dev/leca-store-ai/leca/leca-image \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated

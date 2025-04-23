@@ -11,7 +11,7 @@ class HomeController extends Controller
     public function index()
     {
         $categories = Category::with(['products' => function($query) {
-            $query->where('active', true)->with('images');
+            $query->where('active', true)->with('images', 'variations');
         }])
             ->get();
 

@@ -19,7 +19,20 @@
             @foreach($category->products->take(8) as $product)
             <div class="swiper-slide">
                 <div class="p-4 bg-white rounded shadow text-center">
-                    <img src="{{ $product->slug }}" alt="{{ $product->name }}" class="w-full h-40 object-cover mb-2 rounded">
+                    <!-- CORREÇÃO AQUI: Usar o caminho da imagem em vez do slug -->
+                    @if($product->images->count() > 0)
+                        <img src="{{ asset($product->images->where('is_main', true)->first() ? $product->images->where('is_main', true)->first()->image_path : $product->images->first()->image_path) }}" 
+                             alt="{{ $product->name }}" 
+                             class="w-full h-40 object-cover mb-2 rounded">
+                    @elseif($product->image)
+                        <img src="{{ asset($product->image) }}" 
+                             alt="{{ $product->name }}" 
+                             class="w-full h-40 object-cover mb-2 rounded">
+                    @else
+                        <div class="w-full h-40 bg-gray-200 flex items-center justify-center mb-2 rounded">
+                            <span class="text-gray-500">Sem imagem</span>
+                        </div>
+                    @endif
                     <h2 class="text-lg font-semibold">{{ $product->name }}</h2>
                 </div>
                 </div>
@@ -29,10 +42,10 @@
         <div class="swiper-button-next"></div>
         <div class="swiper-button-prev"></div>
         <div class="swiper-pagination"></div>
-  </div>
+    </div>
 </div>
 
- <!-- Categories Section -->
+ <!-- Restante do código permanece igual -->
  @foreach($categories as $category)
         @if($category->products->count() > 0)
             <section class="mb-12">
@@ -109,4 +122,4 @@
     },
   });
 </script>
-@endsection
+@endsection 

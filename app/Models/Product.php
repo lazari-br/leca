@@ -72,4 +72,27 @@ class Product extends Model
     {
         return $this->variations()->pluck('color')->unique()->toArray();
     }
+    
+    public function getMainImagePathAttribute()
+    {
+        // Primeiro tenta buscar a imagem principal da relação
+        if ($this->images->isNotEmpty()) {
+            $mainImage = $this->images->where('is_main', true)->first();
+            
+            if ($mainImage) {
+                return $mainImage->image_path;
+            }
+            
+            // Se não tem imagem principal, usa a primeira
+            return $this->images->first()->image_path;
+        }
+        
+        // Se não tem imagens na relação, tenta usar o campo de imagem legado
+        if ($this->image) {
+            return $this->image;
+        }
+        
+        // Se não tem nenhuma imagem, retorna null
+        return null;
+    }
 }
