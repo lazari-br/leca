@@ -89,7 +89,7 @@
             <!-- WhatsApp Button -->
             <div class="mt-8">
                 <a 
-                    href="https://wa.me/5500000000000?text=Olá! Tenho interesse no produto {{ $product->name }}%20(Código: {{ $product->code }})" 
+                    href="https://wa.me/5511962163422?text=Olá! Tenho interesse no produto {{ $product->name }}%20(Código: {{ $product->code }})" 
                     target="_blank" 
                     class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
                 >
