@@ -129,7 +129,7 @@
                     <div class="sizes-container">
                         @foreach(['PP', 'P', 'M', 'G', 'GG', 'XG', 'XXG', 'XXXG', 'Único'] as $size)
                             <label class="size-option">
-                                <input type="checkbox" name="sizes[]" value="{{ $size }}" 
+                                <input type="checkbox" name="sizes[]" value="{{ $size }}"
                                     {{ in_array($size, old('sizes', [])) ? 'checked' : '' }}
                                     @click="selectedSizes.includes('{{ $size }}') ? selectedSizes = selectedSizes.filter(s => s !== '{{ $size }}') : selectedSizes.push('{{ $size }}')">
                                 {{ $size }}
@@ -159,15 +159,15 @@
                 <div class="mt-6" x-data="{ selectedColors: [], showColorInput: false, newColor: '' }">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Cores Disponíveis</label>
                     <div class="colors-container">
-                        @foreach(['Preto', 'Branco', 'Cinza', 'Vermelho', 'Rosa', 'Azul', 'Verde', 'Amarelo', 'Roxo', 'Laranja'] as $color)
+                        @foreach($colors as $color)
                             <label class="color-option">
-                                <input type="checkbox" name="colors[]" value="{{ $color }}" 
-                                    {{ in_array($color, old('colors', [])) ? 'checked' : '' }}
-                                    @click="selectedColors.includes('{{ $color }}') ? selectedColors = selectedColors.filter(c => c !== '{{ $color }}') : selectedColors.push('{{ $color }}')">
-                                {{ $color }}
+                                <input type="checkbox" name="colors[]" value="{{ $color['hex'] }}"
+                                    {{ in_array($color['hex'], old('colors', [])) ? 'checked' : '' }}
+                                    @click="selectedColors.includes('{{ $color['hex'] }}') ? selectedColors = selectedColors.filter(c => c !== '{{ $color['hex'] }}') : selectedColors.push('{{ $color['hex'] }}')">
+                                {{ $color['name'] }}
                             </label>
                         @endforeach
-                        <button type="button" @click="showColorInput = !showColorInput" 
+                        <button type="button" @click="showColorInput = !showColorInput"
                             class="py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50">
                             + Cor personalizada
                         </button>

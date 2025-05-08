@@ -13,11 +13,11 @@ class ProductController extends Controller
         $product = Product::where('slug', $slug)
             ->with('variations')
             ->firstOrFail();
-        
+
         // Agrupando variações por tamanho e cor
         $sizes = $product->variations->pluck('size')->unique()->values();
         $colors = $product->variations->pluck('color')->unique()->values()->filter();
-        
+
         return view('products.show', compact('product', 'sizes', 'colors'));
     }
 
@@ -27,7 +27,7 @@ class ProductController extends Controller
         $products = Product::where('category_id', $category->id)
             ->where('active', true)
             ->paginate(12);
-        
+
         return view('products.category', compact('category', 'products'));
     }
 
@@ -38,7 +38,7 @@ class ProductController extends Controller
             ->where('subcategory', $subcategory)
             ->where('active', true)
             ->paginate(12);
-        
+
         return view('products.subcategory', compact('category', 'subcategory', 'products'));
     }
 }

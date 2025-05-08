@@ -116,7 +116,7 @@
                 <!-- Imagens -->
                 <div class="mt-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Imagens do Produto</label>
-                    
+
                     <!-- Exibir imagens existentes -->
                     @if($product->images->count() > 0)
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4" id="images-container">
@@ -124,14 +124,14 @@
                                 <div class="relative group border rounded-lg p-1 image-item" data-id="{{ $image->id }}">
                                     <div class="aspect-w-1 aspect-h-1 overflow-hidden rounded-md bg-gray-200">
                                         <img src="{{ asset($image->image_path) }}" alt="{{ $product->name }}" class="object-cover">
-                                        
+
                                         @if($image->is_main)
                                             <div class="absolute top-2 left-2 bg-pink-500 text-white px-2 py-1 rounded-full text-xs">
                                                 Principal
                                             </div>
                                         @endif
                                     </div>
-                                    
+
                                     <div class="mt-2 flex justify-between">
                                         @if(!$image->is_main)
                                             <form action="{{ route('admin.products.images.main', [$product->id, $image->id]) }}" method="POST">
@@ -143,7 +143,7 @@
                                         @else
                                             <span class="text-xs text-gray-500">Imagem principal</span>
                                         @endif
-                                        
+
                                         <form action="{{ route('admin.products.images.delete', [$product->id, $image->id]) }}" method="POST">
                                             @csrf
                                             @method('DELETE')
@@ -152,7 +152,7 @@
                                             </button>
                                         </form>
                                     </div>
-                                    
+
                                     <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 hidden group-hover:block">
                                         <div class="bg-white bg-opacity-70 p-2 rounded cursor-move">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -166,7 +166,7 @@
                     @else
                         <p class="text-gray-500 mb-4">Este produto ainda não possui imagens.</p>
                     @endif
-                    
+
                     <!-- Upload de novas imagens -->
                     <div class="mt-4">
                         <label for="images" class="block text-sm font-medium text-gray-700 mb-1">Adicionar Novas Imagens</label>
@@ -185,7 +185,7 @@
                     <div class="sizes-container">
                         @foreach(['PP', 'P', 'M', 'G', 'GG', 'XG', 'XXG', 'XXXG', 'Único'] as $size)
                             <label class="size-option">
-                                <input type="checkbox" name="sizes[]" value="{{ $size }}" 
+                                <input type="checkbox" name="sizes[]" value="{{ $size }}"
                                     {{ in_array($size, old('sizes', $sizes->toArray())) ? 'checked' : '' }}
                                     @click="selectedSizes.includes('{{ $size }}') ? selectedSizes = selectedSizes.filter(s => s !== '{{ $size }}') : selectedSizes.push('{{ $size }}')">
                                 {{ $size }}
@@ -203,8 +203,8 @@
                             <template x-for="size in selectedSizes" :key="size">
                                 <div>
                                     <label :for="'stock_' + size" class="block text-sm font-medium text-gray-700 mb-1" x-text="size"></label>
-                                    <input type="number" :name="'stock_' + size" :id="'stock_' + size" 
-                                        :value="getStockForSize(size)" 
+                                    <input type="number" :name="'stock_' + size" :id="'stock_' + size"
+                                        :value="getStockForSize(size)"
                                         min="0" step="1"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500">
                                 </div>
@@ -217,27 +217,16 @@
                 <div class="mt-6" x-data="{ selectedColors: {{ json_encode($colors->toArray()) }}, showColorInput: false, newColor: '' }">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Cores Disponíveis</label>
                     <div class="colors-container">
-                        @foreach(['Preto', 'Branco', 'Cinza', 'Vermelho', 'Rosa', 'Azul', 'Verde', 'Amarelo', 'Roxo', 'Laranja'] as $color)
+                        @foreach($colors as $color)
                             <label class="color-option">
-                                <input type="checkbox" name="colors[]" value="{{ $color }}" 
-                                    {{ in_array($color, old('colors', $colors->toArray())) ? 'checked' : '' }}
-                                    @click="selectedColors.includes('{{ $color }}') ? selectedColors = selectedColors.filter(c => c !== '{{ $color }}') : selectedColors.push('{{ $color }}')">
-                                {{ $color }}
+                                <input type="checkbox" name="colors[]" value="{{ $color['hex'] }}"
+                                    {{ in_array($color['hex'], old('colors', $selectedColors->toArray())) ? 'checked' : '' }}
+                                    @click="selectedColors.includes('{{ $color['hex'] }}') ? selectedColors = selectedColors.filter(c => c !== '{{ $color['hex'] }}') : selectedColors.push('{{ $color['hex'] }}')">
+                                {{ $color['name'] }}
                             </label>
                         @endforeach
-                        
-                        <!-- Cores personalizadas já existentes -->
-                        @foreach($colors as $color)
-                            @if(!in_array($color, ['Preto', 'Branco', 'Cinza', 'Vermelho', 'Rosa', 'Azul', 'Verde', 'Amarelo', 'Roxo', 'Laranja']))
-                                <label class="color-option">
-                                    <input type="checkbox" name="colors[]" value="{{ $color }}" checked
-                                        @click="selectedColors.includes('{{ $color }}') ? selectedColors = selectedColors.filter(c => c !== '{{ $color }}') : selectedColors.push('{{ $color }}')">
-                                    {{ $color }}
-                                </label>
-                            @endif
-                        @endforeach
-                        
-                        <button type="button" @click="showColorInput = !showColorInput" 
+
+                        <button type="button" @click="showColorInput = !showColorInput"
                             class="py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50">
                             + Cor personalizada
                         </button>
@@ -280,7 +269,7 @@
             }
             echo "const stockBySize = " . json_encode($stockBySize) . ";";
         @endphp
-        
+
         return stockBySize[size] || 0;
     }
 </script>
@@ -301,12 +290,12 @@
                 }
             });
         }
-        
+
         // Função para salvar a ordem das imagens
         function saveOrder() {
             const imageItems = document.querySelectorAll('.image-item');
             const imageIds = Array.from(imageItems).map(item => item.dataset.id);
-            
+
             fetch('{{ route("admin.products.images.reorder", $product->id) }}', {
                 method: 'POST',
                 headers: {
@@ -328,7 +317,7 @@
             });
         }
     });
-    
+
     function getStockForSize(size) {
         @php
             $stockBySize = [];
@@ -339,7 +328,7 @@
             }
             echo "const stockBySize = " . json_encode($stockBySize) . ";";
         @endphp
-        
+
         return stockBySize[size] || 0;
     }
 </script>

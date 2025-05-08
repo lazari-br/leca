@@ -22,7 +22,7 @@ class ProductAdminController extends Controller
             abort(redirect()->route('login'));
         }
     }
-    
+
     /**
      * Display a listing of the products.
      *
@@ -31,7 +31,7 @@ class ProductAdminController extends Controller
     public function index()
     {
         $this->checkAuth();
-    
+
         $products = Product::with('category', 'images')->orderBy('created_at', 'desc')->paginate(10);
         return view('admin.products.index', compact('products'));
     }
@@ -44,9 +44,11 @@ class ProductAdminController extends Controller
     public function create()
     {
         $this->checkAuth();
-        
+
         $categories = Category::all();
-        return view('admin.products.create', compact('categories'));
+        $colors = $this->getColors();
+
+        return view('admin.products.create', compact('categories', 'colors'));
     }
 
     /**
@@ -58,7 +60,7 @@ class ProductAdminController extends Controller
     public function store(Request $request)
     {
         $this->checkAuth();
-        
+
         $request->validate([
             'name' => 'required|max:255',
             'code' => 'required|unique:products',
@@ -88,19 +90,19 @@ class ProductAdminController extends Controller
         if ($request->hasFile('images')) {
             $isFirstImage = true;
             $order = 0;
-            
+
             foreach ($request->file('images') as $image) {
                 if ($image->isValid()) {
                     $fileName = time() . '_' . $order . '_' . $image->getClientOriginalName();
                     $imagePath = $image->storeAs('products', $fileName, 'public');
-                    
+
                     ProductImage::create([
                         'product_id' => $product->id,
                         'image_path' => 'storage/' . $imagePath,
                         'is_main' => $isFirstImage, // A primeira imagem será a principal por padrão
                         'order' => $order++
                     ]);
-                    
+
                     $isFirstImage = false;
                 }
             }
@@ -149,15 +151,17 @@ class ProductAdminController extends Controller
     public function edit($id)
     {
         $this->checkAuth();
-        
+
         $product = Product::with(['variations', 'images'])->findOrFail($id);
         $categories = Category::all();
-        
+
         // Obtém os tamanhos e cores únicas para este produto
         $sizes = $product->variations->pluck('size')->unique()->values();
-        $colors = $product->variations->pluck('color')->unique()->filter()->values();
-        
-        return view('admin.products.edit', compact('product', 'categories', 'sizes', 'colors'));
+        $selectedColors = $product->variations->pluck('color')->unique()->filter()->values();
+        $colors = collect($this->getColors());
+        $colors = collect($this->getColors());
+
+        return view('admin.products.edit', compact('product', 'categories', 'sizes', 'colors', 'selectedColors'));
     }
 
     /**
@@ -170,9 +174,9 @@ class ProductAdminController extends Controller
     public function update(Request $request, $id)
     {
         $this->checkAuth();
-        
+
         $product = Product::findOrFail($id);
-        
+
         $request->validate([
             'name' => 'required|max:255',
             'code' => 'required|unique:products,code,' . $id,
@@ -200,12 +204,12 @@ class ProductAdminController extends Controller
         // Processar upload de novas imagens
         if ($request->hasFile('images')) {
             $maxOrder = $product->images()->max('order') ?? -1;
-            
+
             foreach ($request->file('images') as $image) {
                 if ($image->isValid()) {
                     $fileName = time() . '_' . Str::random(5) . '_' . $image->getClientOriginalName();
                     $imagePath = $image->storeAs('products', $fileName, 'public');
-                    
+
                     ProductImage::create([
                         'product_id' => $product->id,
                         'image_path' => 'storage/' . $imagePath,
@@ -219,10 +223,10 @@ class ProductAdminController extends Controller
         // Atualizar variações
         $sizes = $request->sizes;
         $colors = $request->colors ?? [];
-        
+
         // Remover variações antigas
         $product->variations()->delete();
-        
+
         // Criar novas variações
         if (empty($colors)) {
             // Se não houver cores especificadas, criar variações apenas com tamanhos
@@ -263,9 +267,9 @@ class ProductAdminController extends Controller
     public function destroy($id)
     {
         $this->checkAuth();
-        
+
         $product = Product::findOrFail($id);
-        
+
         // Remover imagens
         foreach ($product->images as $image) {
             if (Storage::exists(str_replace('storage/', 'public/', $image->image_path))) {
@@ -273,15 +277,15 @@ class ProductAdminController extends Controller
             }
             $image->delete();
         }
-        
+
         // Remover imagem legada se existir
         if ($product->image && Storage::exists(str_replace('storage/', 'public/', $product->image))) {
             Storage::delete(str_replace('storage/', 'public/', $product->image));
         }
-        
+
         // Remover variações
         $product->variations()->delete();
-        
+
         // Remover produto
         $product->delete();
 
@@ -299,20 +303,20 @@ class ProductAdminController extends Controller
     public function setMainImage($productId, $imageId)
     {
         $this->checkAuth();
-        
+
         $product = Product::findOrFail($productId);
-        
+
         // Remover a marcação principal de todas as imagens do produto
         $product->images()->update(['is_main' => false]);
-        
+
         // Definir a imagem selecionada como principal
         $image = ProductImage::where('product_id', $productId)
             ->where('id', $imageId)
             ->firstOrFail();
-            
+
         $image->is_main = true;
         $image->save();
-        
+
         return redirect()->route('admin.products.edit', $productId)
             ->with('success', 'Imagem principal definida com sucesso!');
     }
@@ -327,31 +331,31 @@ class ProductAdminController extends Controller
     public function deleteImage($productId, $imageId)
     {
         $this->checkAuth();
-        
+
         $image = ProductImage::where('product_id', $productId)
             ->where('id', $imageId)
             ->firstOrFail();
-            
+
         // Excluir arquivo
         if (Storage::exists(str_replace('storage/', 'public/', $image->image_path))) {
             Storage::delete(str_replace('storage/', 'public/', $image->image_path));
         }
-        
+
         // Se esta era a imagem principal, definir outra como principal
         if ($image->is_main) {
             $nextImage = ProductImage::where('product_id', $productId)
                 ->where('id', '!=', $imageId)
                 ->first();
-                
+
             if ($nextImage) {
                 $nextImage->is_main = true;
                 $nextImage->save();
             }
         }
-        
+
         // Excluir registro
         $image->delete();
-        
+
         return redirect()->route('admin.products.edit', $productId)
             ->with('success', 'Imagem excluída com sucesso!');
     }
@@ -366,20 +370,57 @@ class ProductAdminController extends Controller
     public function reorderImages(Request $request, $productId)
     {
         $this->checkAuth();
-        
+
         $request->validate([
             'imageIds' => 'required|array',
             'imageIds.*' => 'required|integer|exists:product_images,id'
         ]);
-        
+
         $imageIds = $request->imageIds;
-        
+
         foreach ($imageIds as $order => $imageId) {
             ProductImage::where('id', $imageId)
                 ->where('product_id', $productId)
                 ->update(['order' => $order]);
         }
-        
+
         return response()->json(['success' => true]);
+    }
+
+    private function getColors(): array
+    {
+        return [
+            [
+                'name' => 'Preto',
+                'hex' => '#000000'
+            ], [
+                'name' => 'Branco',
+                'hex' => '#FFFFFF'
+            ], [
+                'name' => 'Cinza',
+                'hex' => '#808080'
+            ], [
+                'name' => 'Vermelho',
+                'hex' => '#FF0000'
+            ], [
+                'name' => 'Rosa',
+                'hex' => '#FFC0CB'
+            ], [
+                'name' => 'Azul',
+                'hex' => '#0000FF'
+            ], [
+                'name' => 'Verde',
+                'hex' => '#008000'
+            ], [
+                'name' => 'Amarelo',
+                'hex' => '#FFFF00'
+            ], [
+                'name' => 'Roxo',
+                'hex' => '#800080'
+            ], [
+                'name' => 'Laranja',
+                'hex' => '#FFA500'
+            ],
+        ];
     }
 }
