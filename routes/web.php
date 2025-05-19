@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChatAIController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
@@ -29,9 +30,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::get('/products/{id}/edit', [ProductAdminController::class, 'edit'])->name('products.edit');
     Route::put('/products/{id}', [ProductAdminController::class, 'update'])->name('products.update');
     Route::delete('/products/{id}', [ProductAdminController::class, 'destroy'])->name('products.destroy');
-    
+
     // Rotas para gerenciamento de imagens de produtos
     Route::post('/products/{id}/images/main/{imageId}', [ProductAdminController::class, 'setMainImage'])->name('products.images.main');
     Route::delete('/products/{id}/images/{imageId}', [ProductAdminController::class, 'deleteImage'])->name('products.images.delete');
     Route::post('/products/{id}/images/reorder', [ProductAdminController::class, 'reorderImages'])->name('products.images.reorder');
 });
+
+Route::post('/ia-chat', [ChatAIController::class, 'respond']);
+Route::post('/ia-chat/reset', [ChatAIController::class, 'reset']);
+Route::get('/ia-chat/history', [ChatAIController::class, 'history']);
