@@ -3,17 +3,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Order extends Model
+class Sale extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'user_id',
         'customer_name',
-        'customer_email',
-        'customer_phone',
         'status',
+        'sale_date',
+        'payment_date',
+        'payment_method',
+        'installments',
+        'installment_value',
         'total',
         'notes'
     ];
@@ -25,6 +29,11 @@ class Order extends Model
 
     public function items()
     {
-        return $this->hasMany(OrderItem::class);
+        return $this->hasMany(SaleItem::class);
+    }
+
+    public function installments(): HasMany
+    {
+        return $this->hasMany(Installment::class);
     }
 }

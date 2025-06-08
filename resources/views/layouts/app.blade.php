@@ -49,7 +49,7 @@
                     <a href="{{ route('product.category', 'pijamas') }}" class="text-gray-700 hover:text-pink-500">Pijamas</a>
                     <!-- Link de gerenciamento de produtos (visível apenas para usuários autenticados) -->
                     @auth
-                        <a href="{{ route('admin.products.index') }}" class="text-gray-700 hover:text-pink-500">Gerenciar Produtos</a>
+                        <a href="{{ route('admin.index') }}">Admin</a>
                     @endauth
                     <a href="#" class="text-gray-700 hover:text-pink-500">Contato</a>
                 </nav>
@@ -104,7 +104,7 @@
         </div>
     </footer>
 
-    @yield('scripts')
+    @stack('scripts')
     @include('components.chat-widget')
 </body>
 </html>

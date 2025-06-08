@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ChatAIController;
+use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\SalesController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
@@ -23,6 +25,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Rotas administrativas
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+    // Painel principal do Admin
+    Route::get('/', function () {
+        return view('admin.index');
+    })->name('index');
+
     // Rotas para gerenciamento de produtos
     Route::get('/products', [ProductAdminController::class, 'index'])->name('products.index');
     Route::get('/products/create', [ProductAdminController::class, 'create'])->name('products.create');
@@ -35,6 +42,23 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::post('/products/{id}/images/main/{imageId}', [ProductAdminController::class, 'setMainImage'])->name('products.images.main');
     Route::delete('/products/{id}/images/{imageId}', [ProductAdminController::class, 'deleteImage'])->name('products.images.delete');
     Route::post('/products/{id}/images/reorder', [ProductAdminController::class, 'reorderImages'])->name('products.images.reorder');
+
+    // Compras
+    Route::get('/compras', [PurchaseController::class, 'index'])->name('purchases.index');
+    Route::get('/compras/criar', [PurchaseController::class, 'create'])->name('purchases.create');
+    Route::post('/compras', [PurchaseController::class, 'store'])->name('purchases.store');
+    Route::get('/compras/{id}/editar', [PurchaseController::class, 'edit'])->name('purchases.edit');
+    Route::put('/compras/{id}', [PurchaseController::class, 'update'])->name('purchases.update');
+    Route::delete('/compras/{id}', [PurchaseController::class, 'destroy'])->name('purchases.destroy');
+
+    // Vendas
+    Route::get('/vendas', [SalesController::class, 'index'])->name('sales.index');
+    Route::get('/vendas/criar', [SalesController::class, 'create'])->name('sales.create');
+    Route::post('/vendas', [SalesController::class, 'store'])->name('sales.store');
+    Route::get('/vendas/{id}/editar', [SalesController::class, 'edit'])->name('sales.edit');
+    Route::put('/vendas/{id}', [SalesController::class, 'update'])->name('sales.update');
+    Route::delete('/vendas/{id}', [SalesController::class, 'destroy'])->name('sales.destroy');
+
 });
 
 Route::post('/ia-chat', [ChatAIController::class, 'respond']);
