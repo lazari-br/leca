@@ -51,6 +51,6 @@ class User extends Authenticatable
 
     public function type(): BelongsTo
     {
-        return  $this->belongsTo(UserType::class);
+        return $this->belongsTo(UserType::class, 'user_type_id', 'id');
     }
 }

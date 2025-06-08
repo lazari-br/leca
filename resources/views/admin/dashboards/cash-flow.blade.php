@@ -1,4 +1,6 @@
-@extends('layouts.app')
+const incomeData = cashFlowData.map(item => item.income);
+const expensesData = cashFlowData.map(item => -item.expenses); // Negativo para mostrar como saída
+const balanceData = cashFlowData.map(item => item.@extends('layouts.app')
 
 @section('title', 'Fluxo de Caixa - Dashboards')
 
@@ -70,7 +72,7 @@
         </div>
 
         <!-- Resumo Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
             <div class="bg-green-50 p-6 rounded-lg">
                 <h3 class="text-lg font-semibold text-green-800 mb-2">Total de Entradas</h3>
                 <p class="text-3xl font-bold text-green-600">R$ {{ number_format($totalIncome, 2, ',', '.') }}</p>
@@ -80,6 +82,11 @@
                 <h3 class="text-lg font-semibold text-red-800 mb-2">Total de Saídas</h3>
                 <p class="text-3xl font-bold text-red-600">R$ {{ number_format($totalExpenses, 2, ',', '.') }}</p>
                 <p class="text-sm text-red-600">{{ $purchasesCount }} parcelas pagas</p>
+            </div>
+            <div class="bg-yellow-50 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold text-yellow-800 mb-2">Total de Comissões</h3>
+                <p class="text-3xl font-bold text-yellow-600">R$ {{ number_format($totalCommission, 2, ',', '.') }}</p>
+                <p class="text-sm text-yellow-600">Comissões de vendedores</p>
             </div>
             <div class="bg-blue-50 p-6 rounded-lg">
                 <h3 class="text-lg font-semibold text-blue-800 mb-2">Resultado do Período</h3>
@@ -92,10 +99,11 @@
 
         <!-- Gráfico -->
         <div class="bg-white p-6 rounded-lg shadow mb-6">
-            <h2 class="text-xl font-semibold mb-4">Fluxo de Caixa Real - Baseado em Parcelas Pagas</h2>
+            <h2 class="text-xl font-semibold mb-4">Fluxo de Caixa com Comissões - Baseado em Parcelas</h2>
             <div class="mb-4 text-sm text-gray-600">
                 <p><strong>Entradas:</strong> Parcelas de vendas efetivamente recebidas</p>
                 <p><strong>Saídas:</strong> Parcelas de compras efetivamente pagas</p>
+                <p><strong>Comissões:</strong> Valores devidos aos vendedores</p>
             </div>
             <div style="height: 400px;">
                 <canvas id="cashFlowChart"></canvas>
@@ -114,12 +122,13 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Período</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entradas</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Saídas</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Comissões</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resultado do Dia</th>
                     </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($cashFlowData as $data)
-                        @if($data['income'] > 0 || $data['expenses'] > 0)
+                        @if($data['income'] > 0 || $data['expenses'] > 0 || $data['commission'] > 0)
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                     {{ \Carbon\Carbon::parse($data['period'])->format('d/m/Y') }}
@@ -138,14 +147,21 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm {{ ($data['income'] - $data['expenses']) >= 0 ? 'text-green-600' : 'text-red-600' }}">
-                                    R$ {{ number_format($data['income'] - $data['expenses'], 2, ',', '.') }}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-600">
+                                    @if($data['commission'] > 0)
+                                        R$ {{ number_format($data['commission'], 2, ',', '.') }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm {{ ($data['income'] - $data['expenses'] - $data['commission']) >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                                    R$ {{ number_format($data['income'] - $data['expenses'] - $data['commission'], 2, ',', '.') }}
                                 </td>
                             </tr>
                         @endif
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                            <td colspan="5" class="px-6 py-4 text-center text-gray-500">
                                 Nenhum movimento encontrado para o período selecionado
                             </td>
                         </tr>
@@ -170,6 +186,7 @@
 
                 const incomeData = cashFlowData.map(item => item.income);
                 const expensesData = cashFlowData.map(item => -item.expenses); // Negativo para mostrar como saída
+                const commissionData = cashFlowData.map(item => -item.commission); // Negativo para mostrar como saída
 
                 new Chart(ctx, {
                     type: 'line',
@@ -193,6 +210,16 @@
                                 fill: false,
                                 tension: 0.1,
                                 yAxisID: 'y'
+                            },
+                            {
+                                label: 'Comissões (Vendedores)',
+                                data: commissionData,
+                                borderColor: 'rgb(251, 191, 36)',
+                                backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                                fill: false,
+                                tension: 0.1,
+                                yAxisID: 'y',
+                                borderDash: [5, 5] // Linha tracejada
                             }
                         ]
                     },
@@ -202,7 +229,7 @@
                         plugins: {
                             title: {
                                 display: true,
-                                text: 'Fluxo de Caixa - Entradas vs Saídas'
+                                text: 'Fluxo de Caixa - Entradas vs Saídas vs Comissões'
                             },
                             legend: {
                                 position: 'top',

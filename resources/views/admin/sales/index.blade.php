@@ -21,6 +21,7 @@
                 <tr class="bg-gray-100 text-left">
                     <th class="px-4 py-2 border">ID</th>
                     <th class="px-4 py-2 border">Cliente</th>
+                    <th class="px-4 py-2 border">Vendedor</th>
                     <th class="px-4 py-2 border">Data</th>
                     <th class="px-4 py-2 border">Parcelas</th>
                     <th class="px-4 py-2 border">Valor Total</th>
@@ -32,6 +33,7 @@
                     <tr>
                         <td class="px-4 py-2 border">{{ $sale->id }}</td>
                         <td class="px-4 py-2 border">{{ $sale->customer_name ?? '-' }}</td>
+                        <td class="px-4 py-2 border">{{ $sale->seller?->name ?? '-' }}</td>
                         <td class="px-4 py-2 border">{{ \Carbon\Carbon::parse($sale->sale_date)->format('d/m/Y') }}</td>
                         <td class="px-4 py-2 border">{{ $sale->installments ?? '-' }}</td>
                         <td class="px-4 py-2 border">R$ {{ number_format($sale->total, 2, ',', '.') }}</td>

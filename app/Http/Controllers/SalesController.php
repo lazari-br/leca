@@ -16,7 +16,11 @@ class SalesController extends Controller
 {
     public function index()
     {
-        $sales = Sale::with('items')->orderBy('sale_date', 'desc')->get();
+        $salesQuery = Sale::with('items', 'seller')->orderBy('sale_date', 'desc');
+        $sales = auth()->user()->type->name === 'vendedor' ?
+            $salesQuery->where('seller_id', auth()->id())->get() :
+            $salesQuery->get();
+
         return view('admin.sales.index', compact('sales'));
     }
 
@@ -41,6 +45,7 @@ class SalesController extends Controller
             'items.*.product_variation_id' => 'required|exists:product_variations,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
+
         ]);
 
         DB::transaction(function () use ($data) {
@@ -49,8 +54,8 @@ class SalesController extends Controller
             // Calcular comissão se o usuário for vendedor
             $commissionValue = 0;
             $seller_id = null;
-            if (auth()->user()->user_type === 'vendedor' && auth()->user()->commission) {
-                $commissionValue = $total * (auth()->user()->commission / 100);
+            if (auth()->user()->type->name === 'vendedor' && auth()->user()->commission) {
+                $commissionValue = $total * (auth()->user()->commission);
                 $seller_id = Auth::id();
             }
 
@@ -115,7 +120,7 @@ class SalesController extends Controller
             // Calcular comissão se o usuário for vendedor
             $commissionValue = 0;
             if (auth()->user()->user_type === 'vendedor' && auth()->user()->commission) {
-                $commissionValue = $total * (auth()->user()->commission / 100);
+                $commissionValue = $total * (auth()->user()->commission);
             }
 
             $sale->update([

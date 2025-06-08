@@ -52,6 +52,7 @@ class DashboardController extends Controller
         $salesInstallments = Installment::select(
             DB::raw('DATE(due_date) as date'),
             DB::raw('SUM(amount) as total'),
+            DB::raw('SUM(commission_value) as commission_total'),
             DB::raw('COUNT(*) as count')
         )
             ->whereNotNull('sale_id')
@@ -83,13 +84,15 @@ class DashboardController extends Controller
 
             $income = isset($salesInstallments[$dateStr]) ? $salesInstallments[$dateStr]->total : 0;
             $expenses = isset($purchaseInstallments[$dateStr]) ? $purchaseInstallments[$dateStr]->total : 0;
+            $commission = isset($salesInstallments[$dateStr]) ? $salesInstallments[$dateStr]->commission_total : 0;
 
-            // Só adicionar se tiver movimento (entrada ou saída)
-            if ($income > 0 || $expenses > 0) {
+            // Só adicionar se tiver movimento (entrada, saída ou comissão)
+            if ($income > 0 || $expenses > 0 || $commission > 0) {
                 $cashFlowData[] = [
                     'period' => $dateStr,
                     'income' => $income,
-                    'expenses' => $expenses
+                    'expenses' => $expenses,
+                    'commission' => $commission
                 ];
             }
 
@@ -101,13 +104,15 @@ class DashboardController extends Controller
             $cashFlowData[] = [
                 'period' => $startDate->format('Y-m-d'),
                 'income' => 0,
-                'expenses' => 0
+                'expenses' => 0,
+                'commission' => 0
             ];
         }
 
         // Calcular totais
         $totalIncome = array_sum(array_column($cashFlowData, 'income'));
         $totalExpenses = array_sum(array_column($cashFlowData, 'expenses'));
+        $totalCommission = array_sum(array_column($cashFlowData, 'commission'));
 
         // Contar parcelas no período
         $salesCount = Installment::whereNotNull('sale_id')
@@ -122,6 +127,7 @@ class DashboardController extends Controller
             'cashFlowData',
             'totalIncome',
             'totalExpenses',
+            'totalCommission',
             'salesCount',
             'purchasesCount',
             'startDate',
