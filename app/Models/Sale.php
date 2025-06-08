@@ -19,6 +19,8 @@ class Sale extends Model
         'installments',
         'installment_value',
         'total',
+        'commission_value',
+        'seller_id',
         'notes'
     ];
 

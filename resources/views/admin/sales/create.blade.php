@@ -104,6 +104,14 @@
                 <input type="text" id="total" name="total_display" class="w-full border-gray-300 rounded bg-gray-100" readonly>
             </div>
 
+            @if(auth()->user()->user_type === 'vendedor')
+                <div class="mt-6">
+                    <label class="block font-medium">Valor da Comissão ({{ auth()->user()->commission }}%)</label>
+                    <input type="text" id="commission_value" name="commission_display" class="w-full border-gray-300 rounded bg-gray-100" readonly>
+                    <input type="hidden" name="commission_value" id="commission_value_hidden" value="0">
+                </div>
+            @endif
+
             <div class="mt-6">
                 <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded">Salvar Venda</button>
             </div>
@@ -167,7 +175,21 @@
                 });
                 document.getElementById('total').value = `R$ ${total.toFixed(2).replace('.', ',')}`;
                 calculateInstallmentValue(total);
+
+                // Calcular comissão se for vendedor
+                @if(auth()->user()->user_type === 'vendedor')
+                calculateCommission(total);
+                @endif
             }
+
+            @if(auth()->user()->user_type === 'vendedor')
+            function calculateCommission(total) {
+                const commissionRate = {{ auth()->user()->commission ?? 0 }} / 100;
+                const commissionValue = total * commissionRate;
+                document.getElementById('commission_value').value = `R$ ${commissionValue.toFixed(2).replace('.', ',')}`;
+                document.getElementById('commission_value_hidden').value = commissionValue.toFixed(2);
+            }
+            @endif
 
             function validateField(field) {
                 const isValid = field.value.trim() !== '';

@@ -16,6 +16,7 @@ class Installment extends Model
         'due_date',
         'amount',
         'status',
+        'commission_value'
     ];
 
     public function sale(): BelongsTo
