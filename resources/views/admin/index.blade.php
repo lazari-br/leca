@@ -7,17 +7,17 @@
         <h1 class="text-2xl font-bold mb-4">Painel Administrativo</h1>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <a href="{{ route('admin.products.index') }}" class="bg-gray-300 hover:bg-gray-300 text-pink-600 font-bold py-4 px-6 rounded text-center">
+            <a href="{{ route('admin.products.index') }}" class="bg-gray-300 hover:bg-gray-400 text-pink-600 font-bold py-4 px-6 rounded text-center transition-colors">
                 Gerenciar Produtos
             </a>
-            <a href="{{ route('admin.purchases.index') }}" class="bg-gray-300 hover:bg-gray-300 text-pink-600 font-bold py-4 px-6 rounded text-center">
+            <a href="{{ route('admin.purchases.index') }}" class="bg-gray-300 hover:bg-gray-400 text-pink-600 font-bold py-4 px-6 rounded text-center transition-colors">
                 Gerenciar Compras
             </a>
-            <a href="{{ route('admin.sales.index') }}" class="bg-gray-300 hover:bg-gray-300 text-pink-600 font-bold py-4 px-6 rounded text-center">
+            <a href="{{ route('admin.sales.index') }}" class="bg-gray-300 hover:bg-gray-400 text-pink-600 font-bold py-4 px-6 rounded text-center transition-colors">
                 Gerenciar Vendas
             </a>
-            <a href="#" class="bg-gray-300 hover:bg-gray-300 text-pink-600 font-bold py-4 px-6 rounded text-center">
-                Dashboards (em breve)
+            <a href="{{ route('admin.dashboards.index') }}" class="bg-gray-300 hover:bg-gray-400 text-pink-600 font-bold py-4 px-6 rounded text-center transition-colors">
+                Dashboards
             </a>
         </div>
     </div>

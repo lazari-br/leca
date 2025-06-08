@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ChatAIController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SalesController;
 use Illuminate\Support\Facades\Route;
@@ -58,6 +59,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::get('/vendas/{id}/editar', [SalesController::class, 'edit'])->name('sales.edit');
     Route::put('/vendas/{id}', [SalesController::class, 'update'])->name('sales.update');
     Route::delete('/vendas/{id}', [SalesController::class, 'destroy'])->name('sales.destroy');
+
+    Route::get('/dashboards', [DashboardController::class, 'index'])->name('dashboards.index');
+    Route::get('/dashboards/cash-flow', [DashboardController::class, 'cashFlow'])->name('dashboards.cash-flow');
+    Route::get('/dashboards/sales-report', [DashboardController::class, 'salesReport'])->name('dashboards.sales-report');
+    Route::get('/dashboards/purchases-report', [DashboardController::class, 'purchasesReport'])->name('dashboards.purchases-report');
 
 });
 
