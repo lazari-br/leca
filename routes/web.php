@@ -65,6 +65,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::get('/dashboards/sales-report', [DashboardController::class, 'salesReport'])->name('dashboards.sales-report');
     Route::get('/dashboards/purchases-report', [DashboardController::class, 'purchasesReport'])->name('dashboards.purchases-report');
 
+    Route::get('/purchases/export/total', [PurchaseController::class, 'exportTotal'])->name('purchases.export.total');
+    Route::get('/purchases/export/monthly', [PurchaseController::class, 'exportMonthly'])->name('purchases.export.monthly');
+    Route::get('/sales/export/total', [SalesController::class, 'exportTotal'])->name('sales.export.total');
+    Route::get('/sales/export/monthly', [SalesController::class, 'exportMonthly'])->name('sales.export.monthly');
+
 });
 
 Route::post('/ia-chat', [ChatAIController::class, 'respond']);

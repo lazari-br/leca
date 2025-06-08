@@ -1,6 +1,4 @@
-const incomeData = cashFlowData.map(item => item.income);
-const expensesData = cashFlowData.map(item => -item.expenses); // Negativo para mostrar como saída
-const balanceData = cashFlowData.map(item => item.@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Fluxo de Caixa - Dashboards')
 
