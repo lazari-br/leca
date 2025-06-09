@@ -6,12 +6,15 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariation;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
 {
     public function run()
     {
+        $this->refreshBase();
+
         // Importar dados do CSV da planilha Leca
         $csvFile = storage_path('app/catalogo_fitness.csv');
         $lines = file($csvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -29,19 +32,20 @@ class ProductSeeder extends Seeder
 
         // Primeiro, agrupar produtos similares
         foreach ($lines as $line) {
-            $data = str_getcsv($line);
+            $data = explode(';', $line);
 
             if (count($data) < 8 || empty($data[1])) {
                 continue;
             }
 
-            $code = $data[1];
-            $categorySlug = $data[2];
-            $subcategory = $data[3];
-            $name = $data[4];
-            $size = $data[5];
-            $color = $data[6];
-            $price = (float) str_replace(['$', ','], ['', '.'], $data[7]);
+            $code = $data[0];
+            $categorySlug = $data[1];
+            $subcategory = $data[2];
+            $name = $data[3];
+            $size = $data[4];
+            $color = $data[5];
+            $price = (float) str_replace(['$', ','], ['', '.'], $data[6]);
+            $purchasePrice = (float) str_replace(['$', ','], ['', '.'], $data[7]);
 
             // Agrupar por nome do produto para não criar duplicatas
             $productKey = $categorySlug . '-' . Str::slug($name);
@@ -54,7 +58,7 @@ class ProductSeeder extends Seeder
                     'category_id' => $categoriesIds[$categorySlug],
                     'subcategory' => $subcategory,
                     'price' => $price,
-                    'purchase_price' => $price,
+                    'purchase_price' => $purchasePrice,
                     'variations' => []
                 ];
             }
@@ -85,5 +89,17 @@ class ProductSeeder extends Seeder
                 ]);
             }
         }
+    }
+
+    private function refreshBase(): void
+    {
+        DB::select("SET FOREIGN_KEY_CHECKS = 0;");
+        DB::select("truncate products;");
+        DB::select("truncate product_variations;");
+        DB::select("truncate purchases;");
+        DB::select("truncate purchase_items;");
+        DB::select("truncate sales;");
+        DB::select("truncate sale_items;");
+        DB::select("SET FOREIGN_KEY_CHECKS = 0;");
     }
 }
