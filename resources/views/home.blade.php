@@ -11,7 +11,7 @@
         <div class="swiper mySwiper">
             <div class="swiper-wrapper">
                 @foreach($categories as $category)
-                    @foreach($category->products->take(8) as $product)
+                    @foreach($category->products as $product)
                         <div class="swiper-slide">
                             <a href="{{ route('product.show', $product->slug) }}">
                                 <div class="p-4 bg-white rounded shadow text-center hover:shadow-lg transition">
@@ -72,7 +72,7 @@
                 @endif
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    @foreach($category->products->take(8) as $product)
+                    @foreach($category->products as $product)
                         <div x-show="activeTab === 'all' || activeTab === '{{ $product->subcategory }}'"
                              class="transition-opacity duration-300">
                             <x-product-card :product="$product" />
