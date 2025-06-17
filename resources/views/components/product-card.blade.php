@@ -5,12 +5,12 @@
     <a href="{{ route('product.show', $product->slug) }}">
         <div class="aspect-w-1 aspect-h-1 overflow-hidden">
             @if($product->images->count() > 0)
-                <img src="{{ asset($product->images->where('is_main', true)->first() ? $product->images->where('is_main', true)->first()->image_path : $product->images->first()->image_path) }}" 
-                     alt="{{ $product->name }}" 
+                <img src="{{ $product->images->where('is_main', true)->first() ? $product->images->where('is_main', true)->first()->image_url : $product->images->first()->image_url }}"
+                     alt="{{ $product->name }}"
                      class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
             @elseif($product->image)
-                <img src="{{ asset($product->image) }}" 
-                     alt="{{ $product->name }}" 
+                <img src="{{ asset($product->image) }}"
+                     alt="{{ $product->name }}"
                      class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
             @else
                 <div class="w-full h-full bg-gray-200 flex items-center justify-center">

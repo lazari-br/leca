@@ -23,8 +23,7 @@ gcloud run deploy $SERVICE_NAME \
   --platform managed \
   --region $REGION \
   --allow-unauthenticated \
-  --add-cloudsql-instances leca-store-ai:us-central1:leca-db \
-  --set-env-vars DB_CONNECTION=mysql,DB_HOST=/cloudsql/leca-store-ai:us-central1:leca-db,DB_PORT=3306,DB_DATABASE=leca,DB_USERNAME=lecaAdmin,DB_PASSWORD=leca@123
-
+  --add-cloudsql-instances=leca-store-ai:us-central1:leca-db \
+  --set-env-vars DB_CONNECTION=mysql,DB_HOST=/cloudsql/leca-store-ai:us-central1:leca-db,DB_PORT=3306,DB_DATABASE=leca,DB_USERNAME=root,DB_PASSWORD=leca@123
 
 echo "✅ Deploy finalizado!"

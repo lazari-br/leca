@@ -60,6 +60,17 @@ return [
             'report' => false,
         ],
 
+        'google' => [
+            'driver' => 'gcs',
+            'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
+            'key_file_path' => env('GOOGLE_CLOUD_KEY_FILE', null), // Caminho local
+            'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
+            'path_prefix' => null, // opcional: pasta dentro do bucket
+            'storage_api_uri' => null, // opcional: URL customizada
+            'visibility' => 'public', // ou 'private'
+            'throw' => true,
+        ],
+
     ],
 
     /*

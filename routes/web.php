@@ -37,6 +37,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::post('/products', [ProductAdminController::class, 'store'])->name('products.store');
     Route::get('/products/{id}/edit', [ProductAdminController::class, 'edit'])->name('products.edit');
     Route::put('/products/{id}', [ProductAdminController::class, 'update'])->name('products.update');
+    Route::post('/products/{id}', [ProductAdminController::class, 'update'])->name('products.update.post');
     Route::delete('/products/{id}', [ProductAdminController::class, 'destroy'])->name('products.destroy');
 
     // Rotas para gerenciamento de imagens de produtos

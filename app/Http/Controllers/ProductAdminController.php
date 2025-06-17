@@ -8,6 +8,7 @@ use App\Models\ProductImage;
 use App\Models\ProductVariation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,7 +20,7 @@ class ProductAdminController extends Controller
     private function checkAuth()
     {
         if (!Auth::check()) {
-            abort(redirect()->route('login'));
+            return redirect()->route('login');
         }
     }
 
@@ -67,7 +68,7 @@ class ProductAdminController extends Controller
             'price' => 'required|numeric|min:0',
             'purchase_price' => 'required|numeric|min:0',
             'category_id' => 'required|exists:categories,id',
-            'subcategory' => 'required|string|max:255',
+            'subcategory' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'images.*' => 'nullable|image|max:2048',
             'active' => 'boolean',
@@ -75,70 +76,29 @@ class ProductAdminController extends Controller
             'colors' => 'nullable|array',
         ]);
 
+        // Validar campos de estoque dinâmicos
+        $this->validateStockFields($request);
+
         // Criar produto
         $product = Product::create([
             'name' => $request->name,
             'slug' => Str::slug($request->name),
             'code' => $request->code,
-            'price' => $request->price,
-            'purchase_price' => $request->price,
-            'category_id' => $request->category_id,
+            'price' => (float) $request->price,
+            'purchase_price' => (float) $request->purchase_price,
+            'category_id' => (int) $request->category_id,
             'subcategory' => $request->subcategory,
             'description' => $request->description,
-            'active' => $request->has('active'),
+            'active' => $request->boolean('active'),
         ]);
 
         // Processar upload de imagens
         if ($request->hasFile('images')) {
-            $isFirstImage = true;
-            $order = 0;
-
-            foreach ($request->file('images') as $image) {
-                if ($image->isValid()) {
-                    $fileName = time() . '_' . $order . '_' . $image->getClientOriginalName();
-                    $imagePath = $image->storeAs('products', $fileName, 'public');
-
-                    ProductImage::create([
-                        'product_id' => $product->id,
-                        'image_path' => 'storage/' . $imagePath,
-                        'is_main' => $isFirstImage, // A primeira imagem será a principal por padrão
-                        'order' => $order++
-                    ]);
-
-                    $isFirstImage = false;
-                }
-            }
+            $this->processImageUploads($request, $product);
         }
 
         // Criar variações (combinações de tamanhos e cores)
-        $sizes = $request->sizes;
-        $colors = $request->colors ?? [];
-
-        if (empty($colors)) {
-            // Se não houver cores especificadas, criar variações apenas com tamanhos
-            foreach ($sizes as $size) {
-                ProductVariation::create([
-                    'product_id' => $product->id,
-                    'size' => $size,
-                    'color' => null,
-                    'stock' => $request->input('stock_' . $size, 0),
-                    'active' => true,
-                ]);
-            }
-        } else {
-            // Criar variações com tamanhos e cores
-            foreach ($sizes as $size) {
-                foreach ($colors as $color) {
-                    ProductVariation::create([
-                        'product_id' => $product->id,
-                        'size' => $size,
-                        'color' => $color,
-                        'stock' => $request->input('stock_' . $size . '_' . $color, 0),
-                        'active' => true,
-                    ]);
-                }
-            }
-        }
+        $this->createProductVariations($request, $product);
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Produto criado com sucesso!');
@@ -159,8 +119,7 @@ class ProductAdminController extends Controller
 
         // Obtém os tamanhos e cores únicas para este produto
         $sizes = $product->variations->pluck('size')->unique()->values();
-        $selectedColors = $product->variations->pluck('color')->unique()->filter()->values();
-        $colors = collect($this->getColors());
+        $selectedColors = $product->variations->whereNotNull('color')->pluck('color')->unique()->values();
         $colors = collect($this->getColors());
 
         return view('admin.products.edit', compact('product', 'categories', 'sizes', 'colors', 'selectedColors'));
@@ -179,83 +138,49 @@ class ProductAdminController extends Controller
 
         $product = Product::findOrFail($id);
 
+        // Verificar se já existem variações
+        $hasExistingVariations = $product->variations()->count() > 0;
+        try {
         $request->validate([
-            'name' => 'required|max:255',
-            'code' => 'required|unique:products,code,' . $id,
-            'price' => 'required|numeric|min:0',
-            'purchase_price' => 'required|numeric|min:0',
-            'category_id' => 'required|exists:categories,id',
-            'subcategory' => 'required|string|max:255',
+            'name' => 'max:255',
+            'code' => 'unique:products,code,' . $id,
+            'price' => 'numeric|min:0',
+            'purchase_price' => 'numeric|min:0',
+            'category_id' => 'exists:categories,id',
+            'subcategory' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'images.*' => 'nullable|image|max:2048',
             'active' => 'boolean',
-            'sizes' => 'required|array|min:1',
+            'sizes' => $hasExistingVariations ? 'nullable|array' : 'array|min:1',
             'colors' => 'nullable|array',
         ]);
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            Log::error($exception->errors());
+            return back()->withErrors($exception->errors())->withInput();
+        }
+
+        // Validar campos de estoque dinâmicos
+        $this->validateStockFields($request);
 
         // Atualizar produto
         $product->name = $request->name;
         $product->slug = Str::slug($request->name);
         $product->code = $request->code;
-        $product->price = $request->price;
-        $product->category_id = $request->category_id;
+        $product->price = (float) $request->price;
+        $product->purchase_price = (float) $request->purchase_price;
+        $product->category_id = (int) $request->category_id;
         $product->subcategory = $request->subcategory;
         $product->description = $request->description;
-        $product->active = $request->has('active');
+        $product->active = $request->boolean('active');
         $product->save();
 
         // Processar upload de novas imagens
         if ($request->hasFile('images')) {
-            $maxOrder = $product->images()->max('order') ?? -1;
-
-            foreach ($request->file('images') as $image) {
-                if ($image->isValid()) {
-                    $fileName = time() . '_' . Str::random(5) . '_' . $image->getClientOriginalName();
-                    $imagePath = $image->storeAs('products', $fileName, 'public');
-
-                    ProductImage::create([
-                        'product_id' => $product->id,
-                        'image_path' => 'storage/' . $imagePath,
-                        'is_main' => false, // Novas imagens não são principais por padrão
-                        'order' => ++$maxOrder
-                    ]);
-                }
-            }
+            $this->processImageUploads($request, $product, false);
         }
 
         // Atualizar variações
-        $sizes = $request->sizes;
-        $colors = $request->colors ?? [];
-
-        // Remover variações antigas
-        $product->variations()->delete();
-
-        // Criar novas variações
-        if (empty($colors)) {
-            // Se não houver cores especificadas, criar variações apenas com tamanhos
-            foreach ($sizes as $size) {
-                ProductVariation::create([
-                    'product_id' => $product->id,
-                    'size' => $size,
-                    'color' => null,
-                    'stock' => $request->input('stock_' . $size, 0),
-                    'active' => true,
-                ]);
-            }
-        } else {
-            // Criar variações com tamanhos e cores
-            foreach ($sizes as $size) {
-                foreach ($colors as $color) {
-                    ProductVariation::create([
-                        'product_id' => $product->id,
-                        'size' => $size,
-                        'color' => $color,
-                        'stock' => $request->input('stock_' . $size . '_' . $color, 0),
-                        'active' => true,
-                    ]);
-                }
-            }
-        }
+        $this->updateProductVariations($request, $product);
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Produto atualizado com sucesso!');
@@ -390,6 +315,185 @@ class ProductAdminController extends Controller
         return response()->json(['success' => true]);
     }
 
+    /**
+     * Validate stock fields dynamically
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return void
+     */
+    private function validateStockFields(Request $request)
+    {
+        $stockFields = collect($request->all())->filter(function($value, $key) {
+            return str_starts_with($key, 'stock_');
+        });
+
+        foreach($stockFields as $key => $value) {
+            if ($value !== null && (!is_numeric($value) || $value < 0)) {
+                throw new \Illuminate\Validation\ValidationException(
+                    validator([], []),
+                    [$key => ['Estoque deve ser um número positivo']]
+                );
+            }
+        }
+    }
+
+    /**
+     * Process image uploads for a product
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param Product $product
+     * @param bool $isFirstImageMain
+     * @return void
+     */
+    private function processImageUploads(Request $request, Product $product, bool $isFirstImageMain = true)
+    {
+        $isFirstImage = $isFirstImageMain && $product->images()->count() === 0;
+        $maxOrder = $product->images()->max('order') ?? -1;
+
+        foreach ($request->file('images') as $image) {
+            if ($image->isValid()) {
+                $fileName = time() . '_' . Str::random(5) . '_' . $image->getClientOriginalName();
+                $imagePath = Storage::putFileAs('product_images', $image, $fileName, 'public');
+
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_path' => $imagePath,
+                    'is_main' => $isFirstImage,
+                    'order' => $maxOrder + 1
+                ]);
+
+                $isFirstImage = false;
+                $maxOrder++;
+            }
+        }
+    }
+
+    /**
+     * Create product variations for a new product
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param Product $product
+     * @return void
+     */
+    private function createProductVariations(Request $request, Product $product)
+    {
+        $sizes = $request->sizes;
+        $colors = $request->colors ?? [];
+
+        if (empty($colors)) {
+            // Se não houver cores especificadas, criar variações apenas com tamanhos
+            foreach ($sizes as $size) {
+                ProductVariation::create([
+                    'product_id' => $product->id,
+                    'size' => $size,
+                    'color' => null,
+                    'stock' => $request->input('stock_' . $size, 0),
+                    'active' => true,
+                ]);
+            }
+        } else {
+            // Criar variações com tamanhos e cores
+            foreach ($sizes as $size) {
+                foreach ($colors as $color) {
+                    ProductVariation::create([
+                        'product_id' => $product->id,
+                        'size' => $size,
+                        'color' => $color,
+                        'stock' => $request->input('stock_' . $size . '_' . $color, 0),
+                        'active' => true,
+                    ]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Update product variations for an existing product
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param Product $product
+     * @return void
+     */
+    private function updateProductVariations(Request $request, Product $product)
+    {
+        $sizes = $request->sizes ?? $product->variations->pluck('size')->unique()->toArray();
+        $colors = $request->colors ?? [];
+
+        // Obter variações existentes
+        $existingVariations = $product->variations()->get()->keyBy(function($variation) {
+            return $variation->size . '_' . ($variation->color ?? 'null');
+        });
+
+        $newVariations = collect();
+
+        if (empty($colors)) {
+            // Se não houver cores especificadas, criar/atualizar variações apenas com tamanhos
+            foreach ($sizes as $size) {
+                $key = $size . '_null';
+                $stock = $request->input('stock_' . $size, 0);
+
+                if ($existingVariations->has($key)) {
+                    // Atualizar existente
+                    $variation = $existingVariations->get($key);
+                    $variation->update([
+                        'stock' => $stock,
+                        'active' => true,
+                    ]);
+                    $newVariations->push($key);
+                } else {
+                    // Criar nova
+                    ProductVariation::create([
+                        'product_id' => $product->id,
+                        'size' => $size,
+                        'color' => null,
+                        'stock' => $stock,
+                        'active' => true,
+                    ]);
+                    $newVariations->push($key);
+                }
+            }
+        } else {
+            // Criar/atualizar variações com tamanhos e cores
+            foreach ($sizes as $size) {
+                foreach ($colors as $color) {
+                    $key = $size . '_' . $color;
+                    $stock = $request->input('stock_' . $size . '_' . $color, 0);
+
+                    if ($existingVariations->has($key)) {
+                        // Atualizar existente
+                        $variation = $existingVariations->get($key);
+                        $variation->update([
+                            'stock' => $stock,
+                            'active' => true,
+                        ]);
+                        $newVariations->push($key);
+                    } else {
+                        // Criar nova
+                        ProductVariation::create([
+                            'product_id' => $product->id,
+                            'size' => $size,
+                            'color' => $color,
+                            'stock' => $stock,
+                            'active' => true,
+                        ]);
+                        $newVariations->push($key);
+                    }
+                }
+            }
+        }
+
+        // Remover variações que não estão mais sendo usadas
+        $variationsToDelete = $existingVariations->keys()->diff($newVariations);
+        foreach ($variationsToDelete as $keyToDelete) {
+            $existingVariations->get($keyToDelete)->delete();
+        }
+    }
+
+    /**
+     * Get available colors array
+     *
+     * @return array
+     */
     private function getColors(): array
     {
         return [

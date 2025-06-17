@@ -50,12 +50,12 @@
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($product->images->count() > 0)
-                                        <img src="{{ asset($product->images->where('is_main', true)->first()->image_path ?? $product->images->first()->image_path) }}" 
-                                            alt="{{ $product->name }}" 
+                                        <img src="{{ $product->images->where('is_main', true)->first()->image_url ?? $product->images->first()->image_url }}"
+                                             alt="{{ $product->name }}"
                                             class="w-16 h-16 object-cover rounded">
                                     @elseif($product->image)
-                                        <img src="{{ asset($product->image) }}" 
-                                            alt="{{ $product->name }}" 
+                                        <img src="{{ asset($product->image) }}"
+                                            alt="{{ $product->name }}"
                                             class="w-16 h-16 object-cover rounded">
                                     @else
                                         <div class="w-16 h-16 bg-gray-200 flex items-center justify-center rounded">

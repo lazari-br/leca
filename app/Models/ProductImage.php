@@ -16,6 +16,16 @@ class ProductImage extends Model
         'order'
     ];
 
+    public function getImageUrlAttribute(): string
+    {
+        return 'https://storage.googleapis.com/leca_storage/' . $this->image_path;
+    }
+
+    public function getUrl(): string
+    {
+        return $this->image_url;
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class);

@@ -16,7 +16,7 @@
                             <a href="{{ route('product.show', $product->slug) }}">
                                 <div class="p-4 bg-white rounded shadow text-center hover:shadow-lg transition">
                                     @if($product->images->count() > 0)
-                                        <img src="{{ asset($product->images->where('is_main', true)->first() ? $product->images->where('is_main', true)->first()->image_path : $product->images->first()->image_path) }}"
+                                        <img src="{{ $product->images->where('is_main', true)->first() ? $product->images->where('is_main', true)->first()->image_url : $product->images->first()->image_url }}"
                                              alt="{{ $product->name }}"
                                              class="w-full h-40 object-cover mb-2 rounded">
                                     @elseif($product->image)

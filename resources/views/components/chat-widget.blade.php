@@ -40,7 +40,6 @@
                     fetch('/ia-chat/history')
                         .then(res => res.json())
                         .then(data => {
-                            console.log('HISTÓRICO:', data);
                             this.messages = (data.history && Array.isArray(data.history)) ? data.history : [];
 
                             if (this.messages.length === 0) {

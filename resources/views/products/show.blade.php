@@ -20,12 +20,12 @@
             <!-- Product Images -->
             <div x-data="{ activeImage: 0, images: [] }" x-init="images = [
                 @foreach($product->images as $index => $image)
-                    '{{ asset($image->image_path) }}',
+                    '{{ $image->image_url }}',
                 @endforeach
                 @if($product->images->count() == 0 && $product->image)
                     '{{ asset($product->image) }}',
-                @endif
-            ]">
+               @endif
+]">
                 <div class="mb-4">
                     <div class="aspect-w-1 aspect-h-1 overflow-hidden rounded-lg bg-gray-200">
                         <template x-if="images.length > 0">
@@ -38,12 +38,12 @@
                         </template>
                     </div>
                 </div>
-                
+
                 <!-- Thumbnails -->
                 <div class="flex space-x-2 overflow-x-auto pb-2" x-show="images.length > 1">
                     <template x-for="(src, index) in images" :key="index">
-                        <button 
-                            @click="activeImage = index" 
+                        <button
+                            @click="activeImage = index"
                             :class="{ 'ring-2 ring-pink-500': activeImage === index }"
                             class="w-20 h-20 rounded-md overflow-hidden border flex-shrink-0">
                             <img :src="src" alt="{{ $product->name }}" class="w-full h-full object-cover">
@@ -55,30 +55,30 @@
             <!-- Product Details -->
             <div x-data="{ selectedSize: '', selectedColor: '' }">
                 <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ $product->name }}</h1>
-                
+
                 <div class="flex items-center mb-4">
                     <span class="text-gray-600 mr-2">Código:</span>
                     <span class="text-gray-800">{{ $product->code }}</span>
                 </div>
-                
+
                 <div class="text-2xl font-bold text-pink-500 mb-6">
                     R$ {{ number_format($product->price, 2, ',', '.') }}
                 </div>
-                
+
                 @if($product->description)
                     <div class="mb-6 text-gray-700">
                         {{ $product->description }}
                     </div>
                 @endif
-                
+
                 <!-- Size Selection -->
                 @if(count($sizes) > 0)
                     <div class="mb-6">
                         <h3 class="text-lg font-semibold mb-2 text-gray-800">Tamanho</h3>
                         <div class="flex flex-wrap gap-2">
                             @foreach($sizes as $size)
-                                <button 
-                                    @click="selectedSize = '{{ $size }}'" 
+                                <button
+                                    @click="selectedSize = '{{ $size }}'"
                                     :class="{ 'bg-pink-500 text-white border-pink-500': selectedSize === '{{ $size }}', 'bg-white text-gray-800 border-gray-300 hover:border-pink-500': selectedSize !== '{{ $size }}' }"
                                     class="px-4 py-2 border-2 rounded-md font-medium transition-colors"
                                 >
@@ -88,15 +88,15 @@
                         </div>
                     </div>
                 @endif
-                
+
                 <!-- Color Selection -->
                 @if(count($colors) > 0)
                     <div class="mb-6">
                         <h3 class="text-lg font-semibold mb-2 text-gray-800">Cor</h3>
                         <div class="flex flex-wrap gap-2">
                             @foreach($colors as $color)
-                                <button 
-                                    @click="selectedColor = '{{ $color }}'" 
+                                <button
+                                    @click="selectedColor = '{{ $color }}'"
                                     :class="{ 'ring-2 ring-pink-500 ring-offset-2': selectedColor === '{{ $color }}' }"
                                     class="w-10 h-10 rounded-full border border-gray-300 transition-all"
                                     style="background-color: {{ $color }};"
@@ -107,12 +107,12 @@
                         </div>
                     </div>
                 @endif
-                
+
                 <!-- WhatsApp Button -->
                 <div class="mt-8">
-                    <a 
-                        href="https://wa.me/5511962163422?text=Olá! Tenho interesse no produto {{ $product->name }}%20(Código: {{ $product->code }})" 
-                        target="_blank" 
+                    <a
+                        href="https://wa.me/5511962163422?text=Olá! Tenho interesse no produto {{ $product->name }}%20(Código: {{ $product->code }})"
+                        target="_blank"
                         class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-colors"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
@@ -128,7 +128,7 @@
     <!-- Related Products -->
     <div class="mt-12">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Produtos Relacionados</h2>
-        
+
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             @foreach($product->category->products->where('id', '!=', $product->id)->take(4) as $relatedProduct)
                 <x-product-card :product="$relatedProduct" />
