@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Leca Pijamas e Moda Fitness - Home')
+@section('title', 'Leca Moda Fitness - Home')
 
 @section('content')
     <!-- Swiper CSS -->

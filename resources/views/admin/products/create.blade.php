@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Adicionar Produto - Leca Pijamas e Moda Fitness')
+@section('title', 'Adicionar Produto - Leca Moda Fitness')
 
 @section('styles')
     <style>

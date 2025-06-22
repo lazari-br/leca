@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductImage;
 use App\Models\ProductVariation;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -14,9 +15,6 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductAdminController extends Controller
 {
-    /**
-     * Check if user is authenticated and redirect if not
-     */
     private function checkAuth()
     {
         if (!Auth::check()) {
@@ -24,44 +22,24 @@ class ProductAdminController extends Controller
         }
     }
 
-    /**
-     * Display a listing of the products.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
-    public function index()
+    public function index(): ?View
     {
         $this->checkAuth();
-
         $products = Product::with('category', 'images')->orderBy('created_at', 'desc')->paginate(10);
         return view('admin.products.index', compact('products'));
     }
 
-    /**
-     * Show the form for creating a new product.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
-    public function create()
+    public function create(): ?View
     {
         $this->checkAuth();
-
         $categories = Category::all();
         $colors = $this->getColors();
-
         return view('admin.products.create', compact('categories', 'colors'));
     }
 
-    /**
-     * Store a newly created product in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         $this->checkAuth();
-
         $request->validate([
             'name' => 'required|max:255',
             'code' => 'required|unique:products',
@@ -104,13 +82,7 @@ class ProductAdminController extends Controller
             ->with('success', 'Produto criado com sucesso!');
     }
 
-    /**
-     * Show the form for editing the specified product.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
-    public function edit($id)
+    public function edit($id): ?View
     {
         $this->checkAuth();
 
@@ -125,13 +97,6 @@ class ProductAdminController extends Controller
         return view('admin.products.edit', compact('product', 'categories', 'sizes', 'colors', 'selectedColors'));
     }
 
-    /**
-     * Update the specified product in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         $this->checkAuth();
@@ -186,12 +151,6 @@ class ProductAdminController extends Controller
             ->with('success', 'Produto atualizado com sucesso!');
     }
 
-    /**
-     * Remove the specified product from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
         $this->checkAuth();
@@ -221,13 +180,6 @@ class ProductAdminController extends Controller
             ->with('success', 'Produto excluído com sucesso!');
     }
 
-    /**
-     * Set an image as the main image for a product.
-     *
-     * @param  int  $productId
-     * @param  int  $imageId
-     * @return \Illuminate\Http\Response
-     */
     public function setMainImage($productId, $imageId)
     {
         $this->checkAuth();
@@ -249,13 +201,6 @@ class ProductAdminController extends Controller
             ->with('success', 'Imagem principal definida com sucesso!');
     }
 
-    /**
-     * Delete an image from a product.
-     *
-     * @param  int  $productId
-     * @param  int  $imageId
-     * @return \Illuminate\Http\Response
-     */
     public function deleteImage($productId, $imageId)
     {
         $this->checkAuth();
@@ -288,13 +233,6 @@ class ProductAdminController extends Controller
             ->with('success', 'Imagem excluída com sucesso!');
     }
 
-    /**
-     * Reorder images for a product.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $productId
-     * @return \Illuminate\Http\Response
-     */
     public function reorderImages(Request $request, $productId)
     {
         $this->checkAuth();
@@ -315,12 +253,6 @@ class ProductAdminController extends Controller
         return response()->json(['success' => true]);
     }
 
-    /**
-     * Validate stock fields dynamically
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return void
-     */
     private function validateStockFields(Request $request)
     {
         $stockFields = collect($request->all())->filter(function($value, $key) {
@@ -337,14 +269,6 @@ class ProductAdminController extends Controller
         }
     }
 
-    /**
-     * Process image uploads for a product
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param Product $product
-     * @param bool $isFirstImageMain
-     * @return void
-     */
     private function processImageUploads(Request $request, Product $product, bool $isFirstImageMain = true)
     {
         $isFirstImage = $isFirstImageMain && $product->images()->count() === 0;
@@ -368,13 +292,6 @@ class ProductAdminController extends Controller
         }
     }
 
-    /**
-     * Create product variations for a new product
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param Product $product
-     * @return void
-     */
     private function createProductVariations(Request $request, Product $product)
     {
         $sizes = $request->sizes;
@@ -407,13 +324,6 @@ class ProductAdminController extends Controller
         }
     }
 
-    /**
-     * Update product variations for an existing product
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param Product $product
-     * @return void
-     */
     private function updateProductVariations(Request $request, Product $product)
     {
         $sizes = $request->sizes ?? $product->variations->pluck('size')->unique()->toArray();
@@ -489,11 +399,6 @@ class ProductAdminController extends Controller
         }
     }
 
-    /**
-     * Get available colors array
-     *
-     * @return array
-     */
     private function getColors(): array
     {
         return [

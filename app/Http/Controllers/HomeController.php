@@ -4,19 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\HomeService;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    public function index()
-    {
-        $categories = Category::with(['products' => function($query) {
-            $query->where('active', true)
-                ->with('images', 'variations')
-                ->orderBy('id', 'desc');
-        }])
-            ->get();
+    public function __construct(public HomeService $homeService) {}
 
+    public function index(): ?View
+    {
+        $categories = $this->homeService->getCategories();
         return view('home', compact('categories'));
     }
 }

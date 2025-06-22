@@ -1,7 +1,7 @@
     <!-- resources/views/products/show.blade.php -->
     @extends('layouts.app')
 
-    @section('title', $product->name . ' - Leca Pijamas e Moda Fitness')
+    @section('title', $product->name . ' - Leca Moda Fitness')
 
     @section('content')
     <div class="bg-white rounded-lg shadow-md p-6">

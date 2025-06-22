@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Editar Produto - Leca Pijamas e Moda Fitness')
+@section('title', 'Editar Produto - Leca Moda Fitness')
 
 @section('content')
     <div class="container mx-auto px-4">

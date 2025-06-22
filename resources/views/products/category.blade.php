@@ -1,7 +1,7 @@
 <!-- resources/views/products/category.blade.php -->
 @extends('layouts.app')
 
-@section('title', $category->name . ' - Leca Pijamas e Moda Fitness')
+@section('title', $category->name . ' - Leca Moda Fitness')
 
 @section('content')
     <div class="mb-8">
@@ -15,19 +15,19 @@
     @php
         $subcategories = $products->pluck('subcategory')->unique();
     @endphp
-    
+
     @if($subcategories->count() > 1)
         <div class="flex overflow-x-auto pb-2 mb-6 scrollbar-hide" x-data="{ activeSubcategory: 'all' }">
-            <button 
-                @click="activeSubcategory = 'all'" 
+            <button
+                @click="activeSubcategory = 'all'"
                 :class="{ 'bg-pink-500 text-white': activeSubcategory === 'all', 'bg-gray-200 text-gray-700': activeSubcategory !== 'all' }"
                 class="px-4 py-2 rounded-full mr-2 whitespace-nowrap font-medium text-sm transition-colors"
             >
                 Todos
             </button>
-            
+
             @foreach($subcategories as $subcategory)
-                <a 
+                <a
                     href="{{ route('product.subcategory', [$category->slug, $subcategory]) }}"
                     class="px-4 py-2 rounded-full mr-2 whitespace-nowrap font-medium text-sm transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300"
                 >

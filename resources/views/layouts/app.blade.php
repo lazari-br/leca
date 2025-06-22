@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Leca Pijamas e Moda Fitness')</title>
+    <title>@yield('title', 'Leca Moda Fitness')</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('images/logo.png') }}">
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -36,10 +36,10 @@
         <div class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
                 <a href="{{ route('home') }}" class="flex items-center">
-                    <img src="{{ asset('images/logo.png') }}" alt="Leca Pijamas e Moda Fitness" class="h-16 w-16 rounded-lg">
+                    <img src="{{ asset('images/logo.png') }}" alt="Leca Moda Fitness" class="h-16 w-16 rounded-lg">
                     <div class="ml-3">
                         <h1 class="text-xl font-bold text-pink-500">Leca</h1>
-                        <p class="text-sm text-gray-600">Pijamas e Moda Fitness</p>
+                        <p class="text-sm text-gray-600">Moda Fitness</p>
                     </div>
                 </a>
 
@@ -78,7 +78,7 @@
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h3 class="text-lg font-bold mb-4">Leca Pijamas e Moda Fitness</h3>
+                    <h3 class="text-lg font-bold mb-4">Leca Moda Fitness</h3>
                     <p class="text-gray-300">Conforto e estilo para todos os momentos.</p>
                 </div>
                 <div>
@@ -99,7 +99,7 @@
                 </div>
             </div>
             <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
-                <p>&copy; {{ date('Y') }} Leca Pijamas e Moda Fitness. Todos os direitos reservados.</p>
+                <p>&copy; {{ date('Y') }} Leca Moda Fitness. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>

@@ -1,7 +1,7 @@
 <!-- resources/views/products/subcategory.blade.php -->
 @extends('layouts.app')
 
-@section('title', ucfirst($subcategory) . ' - ' . $category->name . ' - Leca Pijamas e Moda Fitness')
+@section('title', ucfirst($subcategory) . ' - ' . $category->name . ' - Leca Moda Fitness')
 
 @section('content')
     <div class="mb-8">

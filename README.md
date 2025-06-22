@@ -1,6 +1,6 @@
-# Leca Pijamas e Moda Fitness - E-commerce
+# Leca Moda Fitness - E-commerce
 
-Este projeto é um e-commerce para a Leca Pijamas e Moda Fitness, desenvolvido com Laravel e Docker.
+Este projeto é um e-commerce para a Leca Moda Fitness, desenvolvido com Laravel e Docker.
 
 ## Requisitos
 
