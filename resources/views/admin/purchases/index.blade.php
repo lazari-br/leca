@@ -18,11 +18,11 @@
                         <div class="py-1" role="none">
                             <a href="{{ route('admin.purchases.export.total') }}" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">
                                 Relatório Total de Compras
-                                <span class="text-xs text-gray-500 block">Data, produto, quantidade, fornecedor, valor total, parcelas</span>
+                                <span class="text-xs text-gray-500 block">Data, SKU, produto, quantidade, fornecedor, valor total, parcelas</span>
                             </a>
                             <a href="{{ route('admin.purchases.export.monthly') }}" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem">
                                 Relatório Mensal de Compras
-                                <span class="text-xs text-gray-500 block">Data, produto, quantidade, fornecedor, valor da parcela</span>
+                                <span class="text-xs text-gray-500 block">Data, SKU, produto, quantidade, fornecedor, valor da parcela</span>
                             </a>
                         </div>
                     </div>
@@ -54,6 +54,10 @@
                 <div>
                     <label for="supplier" class="block text-sm font-medium text-gray-700">Fornecedor</label>
                     <input type="text" name="supplier" id="supplier" value="{{ request('supplier') }}" placeholder="Nome do fornecedor" class="mt-1 block w-full border-gray-300 rounded-md">
+                </div>
+                <div>
+                    <label for="sku" class="block text-sm font-medium text-gray-700">SKU</label>
+                    <input type="text" name="sku" id="sku" value="{{ request('sku') }}" placeholder="Código do SKU" class="mt-1 block w-full border-gray-300 rounded-md">
                 </div>
                 <div>
                     <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
@@ -93,6 +97,7 @@
                     <th class="px-4 py-2 border">ID</th>
                     <th class="px-4 py-2 border">Fornecedor</th>
                     <th class="px-4 py-2 border">Data</th>
+                    <th class="px-4 py-2 border">SKUs Comprados</th>
                     <th class="px-4 py-2 border">Método Pagamento</th>
                     <th class="px-4 py-2 border">Parcelas</th>
                     <th class="px-4 py-2 border">Valor Total</th>
@@ -105,6 +110,54 @@
                         <td class="px-4 py-2 border">{{ $purchase->id }}</td>
                         <td class="px-4 py-2 border">{{ $purchase->supplier_name ?? '-' }}</td>
                         <td class="px-4 py-2 border">{{ \Carbon\Carbon::parse($purchase->purchase_date)->format('d/m/Y') }}</td>
+                        <td class="px-4 py-2 border">
+                            @if($purchase->items && $purchase->items->count() > 0)
+                                <div class="space-y-1">
+                                    @foreach($purchase->items->take(3) as $item)
+                                        @if($item->variation)
+                                            @php
+                                                // Mapeamento de cores hex para nomes
+                                                $colorMap = [
+                                                    '#000000' => 'Preto',
+                                                    '#FFFFFF' => 'Branco',
+                                                    '#808080' => 'Cinza',
+                                                    '#FF0000' => 'Vermelho',
+                                                    '#FFC0CB' => 'Rosa',
+                                                    '#0000FF' => 'Azul',
+                                                    '#000080' => 'Azul',
+                                                    '#008000' => 'Verde',
+                                                    '#FFFF00' => 'Amarelo',
+                                                    '#800080' => 'Roxo',
+                                                    '#FFA500' => 'Laranja',
+                                                    '#A52A2A' => 'Marrom',
+                                                    '#F5CBA7' => 'Bege'
+                                                ];
+                                                $colorDisplay = '';
+                                                if ($item->variation->color) {
+                                                    $colorDisplay = $colorMap[$item->variation->color] ?? $item->variation->color;
+                                                }
+                                            @endphp
+                                            <div class="text-xs bg-gray-100 px-2 py-1 rounded">
+                                                <strong>{{ $item->variation->code }}</strong> - {{ $item->variation->product->name ?? 'Produto não encontrado' }}
+                                                <br>
+                                                <span class="text-gray-600">{{ $item->variation->size }}{{ $colorDisplay ? ' - ' . $colorDisplay : '' }} (Qtd: {{ $item->quantity }})</span>
+                                            </div>
+                                        @else
+                                            <div class="text-xs bg-red-100 px-2 py-1 rounded text-red-600">
+                                                SKU não encontrado (Item #{{ $item->id }})
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                    @if($purchase->items->count() > 3)
+                                        <div class="text-xs text-gray-500">
+                                            +{{ $purchase->items->count() - 3 }} SKUs mais...
+                                        </div>
+                                    @endif
+                                </div>
+                            @else
+                                <span class="text-gray-500 text-xs">Nenhum item</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-2 border">{{ $purchase->payment_method ?? '-' }}</td>
                         <td class="px-4 py-2 border">{{ $purchase->installments ?? '-' }}</td>
                         <td class="px-4 py-2 border">R$ {{ number_format($purchase->total, 2, ',', '.') }}</td>
@@ -119,7 +172,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-4 text-center text-gray-500">
+                        <td colspan="8" class="px-4 py-4 text-center text-gray-500">
                             Nenhuma compra encontrada
                         </td>
                     </tr>
@@ -127,6 +180,12 @@
                 </tbody>
             </table>
         </div>
+
+        @if(method_exists($purchases, 'links'))
+            <div class="mt-4">
+                {{ $purchases->links() }}
+            </div>
+        @endif
     </div>
 
     <script>

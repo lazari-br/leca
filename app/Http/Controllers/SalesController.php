@@ -6,6 +6,7 @@ use App\Http\Requests\StoreSaleRequest;
 use App\Http\Requests\UpdateSaleRequest;
 use App\Models\Sale;
 use App\Models\Product;
+use App\Models\ProductVariation;
 use App\Models\Installment;
 use App\Services\SalesService;
 use Illuminate\Http\Request;
@@ -23,7 +24,10 @@ class SalesController extends Controller
 
     public function create()
     {
-        $products = Product::with('variations')->get();
+        $products = Product::with(['variations' => function($query) {
+            $query->where('active', true);
+        }])->where('active', true)->get();
+
         return view('admin.sales.create', compact('products'));
     }
 
@@ -35,8 +39,11 @@ class SalesController extends Controller
 
     public function edit($id)
     {
-        $sale = Sale::with('items')->findOrFail($id);
-        $products = Product::with('variations')->get();
+        $sale = Sale::with(['items.variation.product'])->findOrFail($id);
+        $products = Product::with(['variations' => function($query) {
+            $query->where('active', true);
+        }])->where('active', true)->get();
+
         return view('admin.sales.edit', compact('sale', 'products'));
     }
 
@@ -57,5 +64,37 @@ class SalesController extends Controller
         });
 
         return redirect()->route('admin.sales.index')->with('success', 'Venda removida com sucesso.');
+    }
+
+    public function getProductVariations($productId)
+    {
+        $variations = ProductVariation::where('product_id', $productId)
+            ->where('active', true)
+            ->where('stock', '>', 0)
+            ->get();
+
+        return response()->json($variations);
+    }
+
+    public function getVariationByCode($code)
+    {
+        $variation = ProductVariation::with('product')
+            ->where('code', $code)
+            ->where('active', true)
+            ->first();
+
+        if (!$variation) {
+            return response()->json(['error' => 'SKU não encontrado'], 404);
+        }
+
+        return response()->json([
+            'id' => $variation->id,
+            'code' => $variation->code,
+            'product_name' => $variation->product->name,
+            'size' => $variation->size,
+            'color' => $variation->color,
+            'stock' => $variation->stock,
+            'price' => $variation->product->price,
+        ]);
     }
 }

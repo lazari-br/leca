@@ -15,6 +15,14 @@ class HomeController extends Controller
     public function index(): ?View
     {
         $categories = $this->homeService->getCategories();
-        return view('home', compact('categories'));
+        $featuredProducts = Product::where('active', true)
+            ->whereHas('category', function($query) {
+                $query->where('slug', 'fitness');
+            })
+            ->with(['variations', 'images', 'category'])
+            ->take(8)
+            ->get();
+
+        return view('home', compact('categories', 'featuredProducts'));
     }
 }

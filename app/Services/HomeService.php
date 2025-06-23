@@ -14,6 +14,7 @@ class HomeService
                 ->with('images', 'variations')
                 ->orderBy('id', 'desc');
         }])
+            ->where('slug', 'fitness')
             ->get();
     }
 }

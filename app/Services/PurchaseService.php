@@ -62,30 +62,63 @@ class PurchaseService
     {
         DB::transaction(function () use ($data, $id) {
             $purchase = Purchase::findOrFail($id);
-            $total = collect($data['items'])->sum(fn($item) => $item['quantity'] * $item['unit_price']);
+            $total = 0;
+
+            if (isset($data['existing_items'])) {
+                foreach ($data['existing_items'] as $existingItem) {
+                    $total += $existingItem['quantity'] * $existingItem['unit_price'];
+                }
+            }
+
+            if (isset($data['items'])) {
+                foreach ($data['items'] as $newItem) {
+                    $total += $newItem['quantity'] * $newItem['unit_price'];
+                }
+            }
 
             $purchase->update([
                 'supplier_name' => $data['supplier_name'] ?? null,
                 'purchase_date' => now()->parse($data['purchase_date'])->format('Y-m-d'),
                 'payment_method' => $data['payment_method'],
                 'installments' => $data['installments'] ?? 1,
-                'installment_value' => $data['installment_value'] ?? $total,
+                'installment_value' => $data['installment_value'] ?? ($total / ($data['installments'] ?? 1)),
                 'total' => $total,
             ]);
 
-            $purchase->items()->delete();
-            Installment::where('purchase_id', $purchase->id)->delete();
-
-            foreach ($data['items'] as $item) {
-                PurchaseItem::create([
-                    'purchase_id' => $purchase->id,
-                    'product_id' => $item['product_id'],
-                    'product_variation_id' => $item['product_variation_id'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                ]);
+            if (isset($data['items_to_delete']) && is_array($data['items_to_delete'])) {
+                PurchaseItem::whereIn('id', $data['items_to_delete'])
+                    ->where('purchase_id', $purchase->id)
+                    ->delete();
             }
 
+            if (isset($data['existing_items'])) {
+                foreach ($data['existing_items'] as $itemData) {
+                    if (isset($itemData['id'])) {
+                        PurchaseItem::where('id', $itemData['id'])
+                            ->where('purchase_id', $purchase->id)
+                            ->update([
+                                'quantity' => $itemData['quantity'],
+                                'unit_price' => $itemData['unit_price'],
+                            ]);
+                    }
+                }
+            }
+
+            if (isset($data['items'])) {
+                foreach ($data['items'] as $newItem) {
+                    if (isset($newItem['product_id'], $newItem['product_variation_id'], $newItem['quantity'], $newItem['unit_price'])) {
+                        PurchaseItem::create([
+                            'purchase_id' => $purchase->id,
+                            'product_id' => $newItem['product_id'],
+                            'product_variation_id' => $newItem['product_variation_id'],
+                            'quantity' => $newItem['quantity'],
+                            'unit_price' => $newItem['unit_price'],
+                        ]);
+                    }
+                }
+            }
+
+            Installment::where('purchase_id', $purchase->id)->delete();
             $this->createInstallments($purchase, $total, $data);
         });
     }

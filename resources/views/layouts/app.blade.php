@@ -45,8 +45,8 @@
 
                 <nav class="hidden md:flex space-x-8">
                     <a href="{{ route('home') }}" class="text-gray-700 hover:text-pink-500">Home</a>
-                    <a href="{{ route('product.category', 'fitness') }}" class="text-gray-700 hover:text-pink-500">Fitness</a>
-                    <a href="{{ route('product.category', 'pijamas') }}" class="text-gray-700 hover:text-pink-500">Pijamas</a>
+                    <a href="{{ route('product.category', 'fitness') }}" class="text-gray-700 hover:text-pink-500">Catálogo</a>
+{{--                    <a href="{{ route('product.category', 'pijamas') }}" class="text-gray-700 hover:text-pink-500">Pijamas</a>--}}
                     <!-- Link de gerenciamento de produtos (visível apenas para usuários autenticados) -->
                     @auth
                         <a href="{{ route('admin.index') }}">Admin</a>
@@ -85,8 +85,8 @@
                     <h3 class="text-lg font-bold mb-4">Links Rápidos</h3>
                     <ul class="space-y-2">
                         <li><a href="{{ route('home') }}" class="text-gray-300 hover:text-white">Home</a></li>
-                        <li><a href="{{ route('product.category', 'fitness') }}" class="text-gray-300 hover:text-white">Fitness</a></li>
-                        <li><a href="{{ route('product.category', 'pijamas') }}" class="text-gray-300 hover:text-white">Pijamas</a></li>
+                        <li><a href="{{ route('product.category', 'fitness') }}" class="text-gray-300 hover:text-white">Catálogo</a></li>
+{{--                        <li><a href="{{ route('product.category', 'pijamas') }}" class="text-gray-300 hover:text-white">Pijamas</a></li>--}}
                     </ul>
                 </div>
                 <div>

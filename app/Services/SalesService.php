@@ -76,37 +76,82 @@ class SalesService
     {
         DB::transaction(function () use ($data, $id) {
             $sale = Sale::findOrFail($id);
-            $total = collect($data['items'])->sum(fn($item) => $item['quantity'] * $item['unit_price']);
 
+            // Calcular total dos itens (existentes + novos)
+            $total = 0;
+
+            // Somar itens existentes
+            if (isset($data['existing_items'])) {
+                foreach ($data['existing_items'] as $existingItem) {
+                    $total += $existingItem['quantity'] * $existingItem['unit_price'];
+                }
+            }
+
+            // Somar novos itens
+            if (isset($data['items'])) {
+                foreach ($data['items'] as $newItem) {
+                    $total += $newItem['quantity'] * $newItem['unit_price'];
+                }
+            }
+
+            // Calcular comissão
             $commissionValue = 0;
             if (auth()->user()->user_type === 'vendedor' && auth()->user()->commission) {
                 $commissionValue = $total * (auth()->user()->commission / 100);
             }
 
+            // Atualizar dados da venda
             $sale->update([
                 'customer_name' => $data['customer_name'] ?? null,
-                'payment_date' => $data['payment_date'],
-                'sale_date' => $data['sale_date'],
+                'payment_date' => now()->parse($data['payment_date'])->format('Y-m-d'),
+                'sale_date' => now()->parse($data['sale_date'])->format('Y-m-d'),
                 'payment_method' => $data['payment_method'],
                 'installments' => $data['installments'] ?? 1,
-                'installment_value' => $data['installment_value'] ?? $total,
+                'installment_value' => $data['installment_value'] ?? ($total / ($data['installments'] ?? 1)),
                 'commission_value' => $commissionValue,
                 'total' => $total,
             ]);
 
-            $sale->items()->delete();
-            Installment::where('sale_id', $sale->id)->delete();
-
-            foreach ($data['items'] as $item) {
-                SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $item['product_id'],
-                    'product_variation_id' => $item['product_variation_id'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                ]);
+            // 1. Deletar itens marcados para exclusão
+            if (isset($data['items_to_delete']) && is_array($data['items_to_delete'])) {
+                SaleItem::whereIn('id', $data['items_to_delete'])
+                    ->where('sale_id', $sale->id)
+                    ->delete();
             }
 
+            // 2. Atualizar itens existentes
+            if (isset($data['existing_items'])) {
+                foreach ($data['existing_items'] as $itemData) {
+                    if (isset($itemData['id'])) {
+                        SaleItem::where('id', $itemData['id'])
+                            ->where('sale_id', $sale->id)
+                            ->update([
+                                'quantity' => $itemData['quantity'],
+                                'unit_price' => $itemData['unit_price'],
+                                // product_id e product_variation_id não mudam para itens existentes
+                            ]);
+                    }
+                }
+            }
+
+            // 3. Adicionar novos itens
+            if (isset($data['items'])) {
+                foreach ($data['items'] as $newItem) {
+                    // Verificar se todos os campos obrigatórios estão presentes
+                    if (isset($newItem['product_id'], $newItem['product_variation_id'], $newItem['quantity'], $newItem['unit_price'])) {
+                        SaleItem::create([
+                            'sale_id' => $sale->id,
+                            'product_id' => $newItem['product_id'],
+                            'product_variation_id' => $newItem['product_variation_id'],
+                            'quantity' => $newItem['quantity'],
+                            'unit_price' => $newItem['unit_price'],
+                        ]);
+                    }
+                }
+            }
+
+            // 4. Recriar installments (sempre recria pois podem ter mudado)
+            Installment::where('sale_id', $sale->id)->delete();
             $this->createInstallments($sale, $total, $data, $commissionValue);
         });
     }

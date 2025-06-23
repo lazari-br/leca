@@ -6,6 +6,7 @@ use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
 use App\Models\Purchase;
 use App\Models\Product;
+use App\Models\ProductVariation;
 use App\Models\Installment;
 use App\Services\PurchaseService;
 use Illuminate\Contracts\View\View;
@@ -26,7 +27,12 @@ class PurchaseController extends Controller
 
     public function create(): View
     {
-        $products = Product::with('variations')->get();
+        $products = Product::with(['variations' => function($query) {
+            $query->where('active', true);
+        }])
+            ->where('active', true)
+            ->get();
+
         return view('admin.purchases.create', compact('products'));
     }
 
@@ -38,8 +44,11 @@ class PurchaseController extends Controller
 
     public function edit($id): View
     {
-        $purchase = Purchase::with('items')->findOrFail($id);
-        $products = Product::with('variations')->get();
+        $purchase = Purchase::with(['items.variation.product'])->findOrFail($id);
+        $products = Product::with(['variations' => function($query) {
+            $query->where('active', true);
+        }])->where('active', true)->get();
+
         return view('admin.purchases.edit', compact('purchase', 'products'));
     }
 
@@ -74,6 +83,37 @@ class PurchaseController extends Controller
     {
         $csvData = $this->purchaseService->buildCsvMonthlyData($request);
         return $this->downloadCsv($csvData, 'relatorio_mensal_compras_' . date('Y-m-d') . '.csv');
+    }
+
+    public function getProductVariations($productId)
+    {
+        $variations = ProductVariation::where('product_id', $productId)
+            ->where('active', true)
+            ->get();
+
+        return response()->json($variations);
+    }
+
+    public function getVariationByCode($code)
+    {
+        $variation = ProductVariation::with('product')
+            ->where('code', $code)
+            ->where('active', true)
+            ->first();
+
+        if (!$variation) {
+            return response()->json(['error' => 'SKU não encontrado'], 404);
+        }
+
+        return response()->json([
+            'id' => $variation->id,
+            'code' => $variation->code,
+            'product_name' => $variation->product->name,
+            'size' => $variation->size,
+            'color' => $variation->color,
+            'stock' => $variation->stock,
+            'purchase_price' => $variation->product->purchase_price,
+        ]);
     }
 
     private function downloadCsv($data, $filename): StreamedResponse

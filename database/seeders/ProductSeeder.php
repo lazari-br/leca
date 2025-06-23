@@ -32,7 +32,7 @@ class ProductSeeder extends Seeder
 
         // Primeiro, agrupar produtos similares
         foreach ($lines as $line) {
-            $data = explode(';', $line);
+            $data = explode(',', $line);
 
             if (count($data) < 8 || empty($data[1])) {
                 continue;
@@ -41,7 +41,7 @@ class ProductSeeder extends Seeder
             $code = $data[0];
             $categorySlug = $data[1];
             $subcategory = $data[2];
-            $name = $data[3];
+            $name = ucfirst($data[3]);
             $size = $data[4];
             $color = $data[5];
             $price = (float) str_replace(['$', ','], ['', '.'], $data[6]);
@@ -52,7 +52,6 @@ class ProductSeeder extends Seeder
 
             if (!isset($productGroups[$productKey])) {
                 $productGroups[$productKey] = [
-                    'code' => $code,
                     'name' => $name,
                     'slug' => Str::slug($name),
                     'category_id' => $categoriesIds[$categorySlug],
@@ -65,9 +64,10 @@ class ProductSeeder extends Seeder
 
             // Adicionar variação
             $productGroups[$productKey]['variations'][] = [
+                'code' => $code,
                 'size' => $size,
                 'color' => $color,
-                'stock' => 10 // Default stock quantity
+                'stock' => 1 // Default stock quantity
             ];
         }
 
@@ -83,6 +83,7 @@ class ProductSeeder extends Seeder
             foreach ($variations as $variation) {
                 ProductVariation::create([
                     'product_id' => $newProduct->id,
+                    'code' => $variation['code'],
                     'size' => $variation['size'],
                     'color' => $variation['color'],
                     'stock' => $variation['stock']
@@ -96,6 +97,7 @@ class ProductSeeder extends Seeder
         DB::select("SET FOREIGN_KEY_CHECKS = 0;");
         DB::select("truncate products;");
         DB::select("truncate product_variations;");
+        DB::select("truncate product_images;");
         DB::select("truncate purchases;");
         DB::select("truncate purchase_items;");
         DB::select("truncate sales;");

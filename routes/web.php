@@ -19,6 +19,10 @@ Route::get('/produto/{slug}', [ProductController::class, 'show'])->name('product
 Route::get('/categoria/{slug}', [ProductController::class, 'category'])->name('product.category');
 Route::get('/categoria/{categorySlug}/{subcategory}', [ProductController::class, 'subcategory'])->name('product.subcategory');
 
+Route::get('/api/products/{product}/variations', [SalesController::class, 'getProductVariations']);
+Route::get('/api/variations/code/{code}', [SalesController::class, 'getVariationByCode']);
+Route::get('/api/product-variations/{product}', [ProductController::class, 'getVariationDetails']);
+
 // Rotas de Autenticação
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
@@ -39,6 +43,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::put('/products/{id}', [ProductAdminController::class, 'update'])->name('products.update');
     Route::post('/products/{id}', [ProductAdminController::class, 'update'])->name('products.update.post');
     Route::delete('/products/{id}', [ProductAdminController::class, 'destroy'])->name('products.destroy');
+    Route::delete('/products/{product}/variations/{variation}', [ProductAdminController::class, 'deleteVariation'])->name('products.variations.delete');
 
     // Rotas para gerenciamento de imagens de produtos
     Route::post('/products/{id}/images/main/{imageId}', [ProductAdminController::class, 'setMainImage'])->name('products.images.main');
