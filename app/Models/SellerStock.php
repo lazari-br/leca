@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SellerStock extends Model
 {
-
     protected $table = 'seller_stocks';
 
     protected $fillable = [
         'seller_id',
         'product_id',
+        'product_variation_id',
         'quantity',
     ];
 
@@ -24,5 +24,10 @@ class SellerStock extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id', 'id');
+    }
+
+    public function productVariation(): BelongsTo
+    {
+        return $this->belongsTo(ProductVariation::class, 'product_variation_id', 'id');
     }
 }

@@ -42,8 +42,10 @@ class SalesService
             $total = collect($data['items'])->sum(fn($item) => $item['quantity'] * $item['unit_price']);
 
             $commissionValue = 0;
-            if (auth()->user()->user_type === 'vendedor' && auth()->user()->commission) {
+            $sellerId = null;
+            if (auth()->user()->type->name === 'vendedor') {
                 $commissionValue = $total * (auth()->user()->commission / 100);
+                $sellerId = auth()->id();
             }
 
             $sale = Sale::create([
@@ -56,6 +58,7 @@ class SalesService
                 'commission_value' => $commissionValue,
                 'total' => $total,
                 'status' => '-',
+                'seller_id' => $sellerId
             ]);
 
             foreach ($data['items'] as $item) {

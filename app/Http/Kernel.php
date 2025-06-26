@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\IpWhitelistMiddleware;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
@@ -67,5 +68,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'verify.secret' => \App\Http\Middleware\SecretHeaders::class,
         'authorization.basic' => \App\Http\Middleware\BasicAuthMiddleware::class,
+        'admin' => AdminMiddleware::class
     ];
 }

@@ -3,6 +3,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Product extends Model
 {
@@ -21,27 +24,42 @@ class Product extends Model
         'active'
     ];
 
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function variations()
+    public function variations(): HasMany
     {
         return $this->hasMany(ProductVariation::class);
     }
 
-    public function images()
+    public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class)->orderBy('order');
     }
 
-    public function mainImage()
+    public function mainImage(): HasOne
     {
         return $this->hasOne(ProductImage::class)->where('is_main', true);
     }
 
-    // Método para obter a URL da imagem principal ou primeira disponível
+    public function sellerStocks(): HasMany
+    {
+        return $this->hasMany(SellerStock::class);
+    }
+
+    public function saleItems(): HasMany
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+
+    // Escopo para produtos ativos
+    public function scopeActive($query)
+    {
+        return $query->where('active', true);
+    }
+
     public function getMainImageUrlAttribute()
     {
         // Verifica se existe uma imagem principal

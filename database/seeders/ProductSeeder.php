@@ -97,7 +97,6 @@ class ProductSeeder extends Seeder
         DB::select("SET FOREIGN_KEY_CHECKS = 0;");
         DB::select("truncate products;");
         DB::select("truncate product_variations;");
-        DB::select("truncate product_images;");
         DB::select("truncate purchases;");
         DB::select("truncate purchase_items;");
         DB::select("truncate sales;");

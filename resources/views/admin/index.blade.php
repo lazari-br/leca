@@ -5,7 +5,7 @@
 @section('content')
     <div class="container mx-auto px-4 py-6">
         <h1 class="text-2xl font-bold mb-4">
-            @if(auth()->user()->user_type === 'vendedor')
+            @if(auth()->user()->type->name === 'vendedor')
                 Painel do Vendedor
             @else
                 Painel Administrativo
@@ -40,6 +40,9 @@
                 </a>
                 <a href="{{ route('admin.sales.index') }}" class="bg-gray-300 hover:bg-gray-400 text-pink-600 font-bold py-4 px-6 rounded text-center transition-colors">
                     Gerenciar Vendas
+                </a>
+                <a href="{{ route('admin.sellers.index') }}" class="bg-gray-300 hover:bg-gray-400 text-pink-600 font-bold py-4 px-6 rounded text-center transition-colors">
+                    Gerenciar Vendedores
                 </a>
                 <a href="{{ route('admin.dashboards.index') }}" class="bg-gray-300 hover:bg-gray-400 text-pink-600 font-bold py-4 px-6 rounded text-center transition-colors">
                     Dashboards

@@ -24,9 +24,16 @@ class SalesController extends Controller
 
     public function create()
     {
-        $products = Product::with(['variations' => function($query) {
+        $query = Product::with(['variations' => function($query) {
             $query->where('active', true);
-        }])->where('active', true)->get();
+        }])
+            ->where('active', true);
+
+        if (auth()->user()->type->name !== 'admin') {
+            $query->whereHas('sellerStocks');
+        }
+
+        $products = $query->get();
 
         return view('admin.sales.create', compact('products'));
     }

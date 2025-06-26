@@ -139,7 +139,7 @@
                         <td class="px-4 py-2 border">
                             @if($sale->items && $sale->items->count() > 0)
                                 <div class="space-y-1">
-                                    @foreach($sale->items->take(3) as $item)
+                                    @foreach($sale->items->take(3) as $item)we
                                         @if($item->variation)
                                             @php
                                                 // Mapeamento de cores hex para nomes

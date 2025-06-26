@@ -4,6 +4,7 @@ use App\Http\Controllers\ChatAIController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SalesController;
+use App\Http\Controllers\SellerController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
@@ -75,6 +76,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::get('/purchases/export/monthly', [PurchaseController::class, 'exportMonthly'])->name('purchases.export.monthly');
     Route::get('/sales/export/total', [SalesController::class, 'exportTotal'])->name('sales.export.total');
     Route::get('/sales/export/monthly', [SalesController::class, 'exportMonthly'])->name('sales.export.monthly');
+
+    Route::resource('sellers', SellerController::class);
+    Route::post('sellers/{id}/update-post', [SellerController::class, 'updatePost'])->name('sellers.update-post');
+    Route::post('sellers/{id}/add-stock', [SellerController::class, 'addStock'])->name('sellers.add-stock');
+    Route::post('sellers/{id}/remove-stock', [SellerController::class, 'removeStock'])->name('sellers.remove-stock');
 
 });
 
