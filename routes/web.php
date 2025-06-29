@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ChatAIController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\SellerController;
@@ -82,6 +83,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::post('sellers/{id}/add-stock', [SellerController::class, 'addStock'])->name('sellers.add-stock');
     Route::post('sellers/{id}/remove-stock', [SellerController::class, 'removeStock'])->name('sellers.remove-stock');
 
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
 
 Route::post('/ia-chat', [ChatAIController::class, 'respond']);
