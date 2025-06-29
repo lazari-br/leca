@@ -33,29 +33,44 @@
 </head>
 <body class="bg-gray-50">
 <!-- Header -->
-<header class="bg-white shadow-sm">
+<header class="bg-white shadow-sm" x-data="{ mobileMenuOpen: false }">
     <div class="container mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
-            <a href="{{ route('home') }}" class="flex items-center">
-                <img src="{{ asset('images/logo.png') }}" alt="Leca Moda Fitness" class="h-16 w-16 rounded-lg">
-                <div class="ml-3">
-                    <h1 class="text-xl font-bold text-pink-500">Leca</h1>
-                    <p class="text-sm text-gray-600">Moda Fitness</p>
-                </div>
-            </a>
+            <!-- Menu Mobile Button + Logo -->
+            <div class="flex items-center">
+                <!-- Menu Hambúrguer (visível apenas no mobile) -->
+                <button @click="mobileMenuOpen = !mobileMenuOpen"
+                        class="md:hidden text-gray-700 hover:text-pink-500 mr-3 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path x-show="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        <path x-show="mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
 
+                <!-- Logo -->
+                <a href="{{ route('home') }}" class="flex items-center">
+                    <img src="{{ asset('images/logo.png') }}" alt="Leca Moda Fitness" class="h-16 w-16 rounded-lg">
+                    <div class="ml-3">
+                        <h1 class="text-xl font-bold text-pink-500">Leca</h1>
+                        <p class="text-sm text-gray-600">Moda Fitness</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Menu Desktop -->
             <nav class="hidden md:flex space-x-8">
                 <a href="{{ route('home') }}" class="text-gray-700 hover:text-pink-500">Home</a>
                 <a href="{{ route('product.category', 'fitness') }}" class="text-gray-700 hover:text-pink-500">Catálogo</a>
                 {{--                    <a href="{{ route('product.category', 'pijamas') }}" class="text-gray-700 hover:text-pink-500">Pijamas</a>--}}
                 <!-- Link de gerenciamento de produtos (visível apenas para usuários autenticados) -->
                 @auth
-                    <a href="{{ route('admin.index') }}">Admin</a>
+                    <a href="{{ route('admin.index') }}" class="text-gray-700 hover:text-pink-500">Admin</a>
                 @endauth
                 <a href="#" class="text-gray-700 hover:text-pink-500">Contato</a>
             </nav>
 
-            <div class="flex items-center space-x-4">
+            <!-- Ações do Usuário Desktop -->
+            <div class="hidden md:flex items-center space-x-4">
                 @guest
                     <a href="{{ route('login') }}" class="text-gray-700 hover:text-pink-500">Login</a>
                 @else
@@ -67,7 +82,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                         </svg>
-                        <span class="ml-1 hidden sm:inline"></span>
+                        <span class="ml-1"></span>
                     </a>
 
                     <form action="{{ route('logout') }}" method="POST">
@@ -76,6 +91,60 @@
                     </form>
                 @endguest
             </div>
+
+            <!-- Ações do Usuário Mobile -->
+            <div class="md:hidden flex items-center space-x-2">
+                @auth
+                    <!-- Ícone de Perfil Mobile -->
+                    <a href="{{ route('profile.edit') }}"
+                       class="text-gray-700 hover:text-pink-500"
+                       title="Editar Perfil">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </a>
+                @endauth
+            </div>
+        </div>
+
+        <!-- Menu Mobile (dropdown) -->
+        <div x-show="mobileMenuOpen"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             class="md:hidden mt-4 pb-4 border-t border-gray-200">
+            <nav class="flex flex-col space-y-4 pt-4">
+                <a href="{{ route('home') }}" class="text-gray-700 hover:text-pink-500 px-2 py-1">Home</a>
+                <a href="{{ route('product.category', 'fitness') }}" class="text-gray-700 hover:text-pink-500 px-2 py-1">Catálogo</a>
+                {{--                    <a href="{{ route('product.category', 'pijamas') }}" class="text-gray-700 hover:text-pink-500 px-2 py-1">Pijamas</a>--}}
+                @auth
+                    <a href="{{ route('admin.index') }}" class="text-gray-700 hover:text-pink-500 px-2 py-1">Admin</a>
+                @endauth
+                <a href="#" class="text-gray-700 hover:text-pink-500 px-2 py-1">Contato</a>
+
+                <!-- Ações do usuário no menu mobile -->
+                <div class="border-t border-gray-200 pt-4 mt-4">
+                    @guest
+                        <a href="{{ route('login') }}" class="text-gray-700 hover:text-pink-500 px-2 py-1 block">Login</a>
+                    @else
+                        <a href="{{ route('profile.edit') }}" class="text-gray-700 hover:text-pink-500 px-2 py-1 flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            Meu Perfil
+                        </a>
+                        <form action="{{ route('logout') }}" method="POST" class="mt-2">
+                            @csrf
+                            <button type="submit" class="text-gray-700 hover:text-pink-500 px-2 py-1 text-left w-full">Sair</button>
+                        </form>
+                    @endguest
+                </div>
+            </nav>
         </div>
     </div>
 </header>
