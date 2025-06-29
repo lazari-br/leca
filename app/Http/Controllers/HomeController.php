@@ -20,6 +20,7 @@ class HomeController extends Controller
                 $query->where('slug', 'fitness');
             })
             ->with(['variations', 'images', 'category'])
+            ->orderBy('id', 'desc')
             ->take(8)
             ->get();
 

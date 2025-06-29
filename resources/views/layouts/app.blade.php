@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Leca Moda Fitness')</title>
-    <link rel="icon" type="image/x-icon" href="{{ asset('images/logo.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('images/browser-logo.png') }}">
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->
@@ -49,11 +49,7 @@
 
                 <!-- Logo -->
                 <a href="{{ route('home') }}" class="flex items-center">
-                    <img src="{{ asset('images/logo.png') }}" alt="Leca Moda Fitness" class="h-16 w-16 rounded-lg">
-                    <div class="ml-3">
-                        <h1 class="text-xl font-bold text-pink-500">Leca</h1>
-                        <p class="text-sm text-gray-600">Moda Fitness</p>
-                    </div>
+                    <img src="{{ asset('images/logo.png') }}" alt="Leca Moda Fitness" class="h-18 w-32 rounded-lg">
                 </a>
             </div>
 
